@@ -10,7 +10,7 @@ const verifyToken = (req, res, next) => {
       return res.status(403).send("A token is required for authentication");
     }
   } catch (error) {
-    return res.status(401).send("Token expired");
+    return res.status(401).send("Yenidən giriş edin. Token expired.");
   }
   return next();
 };
