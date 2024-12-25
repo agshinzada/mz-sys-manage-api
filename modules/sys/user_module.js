@@ -51,8 +51,47 @@ const registerUser = async (data) => {
   }
 };
 
+const putUser = async (id, data) => {
+  try {
+    await poolSYS.connect();
+    const result = await poolSYS
+      .request()
+      .input("id", sql.Int, id)
+      .input("ref", sql.Int, data.logoRef)
+      .input("username", sql.VarChar, data.username)
+      .input("role", sql.VarChar, data.role)
+      .input("status", sql.Int, data.status)
+      .query(
+        `UPDATE SYS_USERS SET REF=@ref, USERNAME=@username, ROLE=@role, STATUS=@status WHERE ID=@id`
+      );
+    return result.recordset;
+  } catch (err) {
+    throw err;
+  } finally {
+    poolSYS.release();
+  }
+};
+
+const putUserPassword = async (id, data) => {
+  try {
+    await poolSYS.connect();
+    const result = await poolSYS
+      .request()
+      .input("id", sql.Int, id)
+      .input("pass", sql.VarChar, data.password)
+      .query(`UPDATE SYS_USERS SET HASH_PASSWORD=@pass WHERE ID=@id`);
+    return result.recordset;
+  } catch (err) {
+    throw err;
+  } finally {
+    poolSYS.release();
+  }
+};
+
 module.exports = {
   getUsers,
   registerUser,
   loginUser,
+  putUser,
+  putUserPassword,
 };

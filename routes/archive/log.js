@@ -1,28 +1,28 @@
 const express = require("express");
 const router = express.Router();
-const serviceModule = require("../../modules/mobim/service_module");
+const logModule = require("../../modules/archive/log_module");
 const auth = require("../../middleware/auth");
 const logger = require("../../logger");
 
 router.get("/", auth, (req, res) => {
-  serviceModule
-    .getServices()
+  logModule
+    .getLogs()
     .then((response) => {
       res.status(200).send(response);
     })
     .catch((error) => {
-      logger.error(`GET /services error : ${error.message}`);
+      logger.error(`GET /logs error : ${error.message}`);
       res.status(500).send(error.message);
     });
 });
-router.get("/tasks", auth, (req, res) => {
-  serviceModule
-    .getServiceTasks()
+router.get("/search", auth, (req, res) => {
+  logModule
+    .getLogsBySearch(req.query.q)
     .then((response) => {
       res.status(200).send(response);
     })
     .catch((error) => {
-      logger.error(`GET /services/tasks error : ${error.message}`);
+      logger.error(`GET /logs error : ${error.message}`);
       res.status(500).send(error.message);
     });
 });

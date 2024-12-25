@@ -16,6 +16,18 @@ router.get("/", auth, (req, res) => {
     });
 });
 
+router.get("/delayed", auth, (req, res) => {
+  paymentModule
+    .getDelayedPayments()
+    .then((response) => {
+      res.status(200).send(response);
+    })
+    .catch((error) => {
+      logger.error(`GET /payments/ error : ${error.message}`);
+      res.status(500).send(error.message);
+    });
+});
+
 router.get("/remain", auth, (req, res) => {
   paymentModule
     .getPaymentRemain(req.query)

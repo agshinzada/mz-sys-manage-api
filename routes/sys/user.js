@@ -54,4 +54,27 @@ router.post("/register", auth, (req, res) => {
     });
 });
 
+router.put("/users/password/:id", auth, (req, res) => {
+  userModule
+    .putUserPassword(req.params.id, req.body)
+    .then((response) => {
+      res.status(200).send("Düzəliş edildi!");
+    })
+    .catch((error) => {
+      logger.error(`PUT /auth/users/password error : ${error.message}`);
+      res.status(500).send(error.message);
+    });
+});
+router.put("/users/:id", auth, (req, res) => {
+  userModule
+    .putUser(req.params.id, req.body)
+    .then((response) => {
+      res.status(200).send("Düzəliş edildi!");
+    })
+    .catch((error) => {
+      logger.error(`PUT /auth/users/ error : ${error.message}`);
+      res.status(500).send(error.message);
+    });
+});
+
 module.exports = router;

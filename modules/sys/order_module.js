@@ -4,14 +4,38 @@ const sql = require("mssql");
 const getOrders = async () => {
   try {
     await poolMobim.connect();
-    const result = await poolMobim
-      .request()
-      .query(
-        `Select * from order_head WITH (NOLOCK) where status = 0 order by inserteddate desc`
-      );
+    const result = await poolMobim.request().query(
+      `SELECT OH.brend_id,OH.clientcode,OH.clorderno,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
+        OH.promostatus,OH.record_id,OH.RouteType,OH.specode,OH.status,SC.COLOR ORDERKIND_COLOR,SC.NAME ORDERKIND_NAME, 
+        SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM order_head OH
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_ORDERKIND_CODES SC ON SC.STATUS_ID=OH.orderkind
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_STATUS_CODES SC2 ON SC2.STATUS_ID=OH.status
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=OH.brend_id
+        WHERE OH.status=0
+        ORDER BY OH.InsertedDate DESC`
+    );
     return result.recordset;
   } catch (err) {
     console.log(err);
+    throw err;
+  } finally {
+    poolMobim.release();
+  }
+};
+
+const getDelayedOrders = async () => {
+  try {
+    await poolMobim.connect();
+    const result = await poolMobim.request().query(
+      `SELECT OH.brend_id,OH.clientcode,OH.clorderno,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
+        OH.promostatus,OH.record_id,OH.RouteType,OH.specode,OH.status,SC.COLOR ORDERKIND_COLOR,SC.NAME ORDERKIND_NAME, 
+       SB.NAME BRAND_NAME FROM order_head OH
+      LEFT JOIN WEB_APP_MANAGE_DB..SYS_ORDERKIND_CODES SC ON SC.STATUS_ID=OH.orderkind
+      LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=OH.brend_id
+      WHERE OH.STATUS=0 AND DATEDIFF(MINUTE, OH.InsertedDate, GETDATE()) >= 6`
+    );
+    return result.recordset;
+  } catch (err) {
     throw err;
   } finally {
     poolMobim.release();
@@ -47,24 +71,6 @@ const updateOrderStatus = async (data) => {
   }
 };
 
-const getOrdersByClientCode = async (data) => {
-  try {
-    await poolMobim.connect();
-    const result = await poolMobim
-      .request()
-      .input("client", sql.VarChar, data)
-      .query(
-        "Select top 50 * from order_head WITH (NOLOCK) where clientcode like @client order by InsertedDate desc"
-      );
-
-    return result.recordset;
-  } catch (err) {
-    throw err;
-  } finally {
-    poolMobim.release();
-  }
-};
-
 const getLogoOrdersByFilter = async (data) => {
   try {
     await poolMazarina.connect();
@@ -75,10 +81,10 @@ const getLogoOrdersByFilter = async (data) => {
       .input("to", sql.VarChar, data.to)
       .query(
         `SELECT TOP (100) ORF.DATE_,FICHENO,DOCODE,CLC.CODE,CLC.DEFINITION_,SLS.CODE RUT,ORF.SOURCEINDEX DELIVERY,ROUND(NETTOTAL,2) NETTOTAL 
-FROM LG_013_01_ORFICHE ORF WITH (NOLOCK)
-LEFT JOIN LG_013_CLCARD CLC WITH (NOLOCK) ON ORF.CLIENTREF=CLC.LOGICALREF
-LEFT JOIN maindb..LG_SLSMAN SLS WITH (NOLOCK) ON SLS.LOGICALREF=ORF.SALESMANREF AND FIRMNR=13
-WHERE DOCODE= @status AND CONVERT(DATE,DATE_) BETWEEN @from AND @to ORDER BY DATE_ DESC`
+        FROM LG_013_01_ORFICHE ORF WITH (NOLOCK)
+        LEFT JOIN LG_013_CLCARD CLC WITH (NOLOCK) ON ORF.CLIENTREF=CLC.LOGICALREF
+        LEFT JOIN maindb..LG_SLSMAN SLS WITH (NOLOCK) ON SLS.LOGICALREF=ORF.SALESMANREF AND FIRMNR=13
+        WHERE DOCODE= @status AND CONVERT(DATE,DATE_) BETWEEN @from AND @to ORDER BY DATE_ DESC`
       );
 
     return result.recordset;
@@ -97,10 +103,10 @@ const getLogoOrdersBySearch = async (data) => {
       .input("code", sql.VarChar, data)
       .query(
         `SELECT TOP (20) ORF.DATE_,FICHENO,DOCODE,CLC.CODE,CLC.DEFINITION_,SLS.CODE RUT,ORF.SOURCEINDEX DELIVERY,ROUND(NETTOTAL,2) NETTOTAL 
-FROM LG_013_01_ORFICHE ORF WITH (NOLOCK)
-LEFT JOIN LG_013_CLCARD CLC WITH (NOLOCK) ON ORF.CLIENTREF=CLC.LOGICALREF
-LEFT JOIN maindb..LG_SLSMAN SLS WITH (NOLOCK) ON SLS.LOGICALREF=ORF.SALESMANREF AND FIRMNR=13
-WHERE CLC.CODE=@code ORDER BY DATE_ DESC`
+        FROM LG_013_01_ORFICHE ORF WITH (NOLOCK)
+        LEFT JOIN LG_013_CLCARD CLC WITH (NOLOCK) ON ORF.CLIENTREF=CLC.LOGICALREF
+        LEFT JOIN maindb..LG_SLSMAN SLS WITH (NOLOCK) ON SLS.LOGICALREF=ORF.SALESMANREF AND FIRMNR=13
+        WHERE CLC.CODE=@code ORDER BY DATE_ DESC`
       );
 
     return result.recordset;
@@ -110,6 +116,34 @@ WHERE CLC.CODE=@code ORDER BY DATE_ DESC`
     poolMazarina.release();
   }
 };
+
+const getOrdersByClientCode = async (data) => {
+  try {
+    await poolMobim.connect();
+    const result = await poolMobim
+      .request()
+      .input("client", sql.VarChar, data)
+      .query(
+        `
+        SELECT TOP 100 OH.brend_id,OH.clientcode,OH.clorderno,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
+        OH.promostatus,OH.record_id,OH.RouteType,OH.specode,OH.status,SC.COLOR ORDERKIND_COLOR,SC.NAME ORDERKIND_NAME, 
+        SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM order_head OH
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_ORDERKIND_CODES SC ON SC.STATUS_ID=OH.orderkind
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_STATUS_CODES SC2 ON SC2.STATUS_ID=OH.status
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=OH.brend_id
+        WHERE OH.clientcode like @client
+        ORDER BY OH.InsertedDate DESC
+        `
+      );
+
+    return result.recordset;
+  } catch (err) {
+    throw err;
+  } finally {
+    poolMobim.release();
+  }
+};
+
 const getOrdersByOrderId = async (data) => {
   try {
     await poolMobim.connect();
@@ -117,7 +151,14 @@ const getOrdersByOrderId = async (data) => {
       .request()
       .input("id", sql.VarChar, data)
       .query(
-        "Select * from order_head WITH (NOLOCK) where order_id=@id order by InsertedDate desc"
+        `SELECT OH.brend_id,OH.clientcode,OH.clorderno,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
+        OH.promostatus,OH.record_id,OH.RouteType,OH.specode,OH.status,SC.COLOR ORDERKIND_COLOR,SC.NAME ORDERKIND_NAME, 
+        SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM order_head OH
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_ORDERKIND_CODES SC ON SC.STATUS_ID=OH.orderkind
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_STATUS_CODES SC2 ON SC2.STATUS_ID=OH.status
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=OH.brend_id
+        WHERE OH.order_id=@id
+        ORDER BY OH.InsertedDate DESC`
       );
     return result.recordset;
   } catch (err) {
@@ -133,7 +174,15 @@ const getOrdersByDeviceId = async (data) => {
       .request()
       .input("id", sql.VarChar, data)
       .query(
-        "Select top 50 * from order_head WITH (NOLOCK) where device_id=@id order by InsertedDate desc"
+        `SELECT TOP 100 OH.brend_id,OH.clientcode,OH.clorderno,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
+        OH.promostatus,OH.record_id,OH.RouteType,OH.specode,OH.status,SC.COLOR ORDERKIND_COLOR,SC.NAME ORDERKIND_NAME, 
+        SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM order_head OH
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_ORDERKIND_CODES SC ON SC.STATUS_ID=OH.orderkind
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_STATUS_CODES SC2 ON SC2.STATUS_ID=OH.status
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=OH.brend_id
+        WHERE OH.device_id=@id
+        ORDER BY OH.InsertedDate DESC
+        `
       );
     return result.recordset;
   } catch (err) {
@@ -149,7 +198,16 @@ const getOrdersByRecordId = async (data) => {
       .request()
       .input("id", sql.VarChar, data)
       .query(
-        "Select top 50 * from order_head WITH (NOLOCK) where record_id=@id order by InsertedDate desc"
+        `
+        SELECT OH.brend_id,OH.clientcode,OH.clorderno,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
+        OH.promostatus,OH.record_id,OH.RouteType,OH.specode,OH.status,SC.COLOR ORDERKIND_COLOR,SC.NAME ORDERKIND_NAME, 
+        SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM order_head OH
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_ORDERKIND_CODES SC ON SC.STATUS_ID=OH.orderkind
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_STATUS_CODES SC2 ON SC2.STATUS_ID=OH.status
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=OH.brend_id
+        WHERE OH.record_id=@id
+        ORDER BY OH.InsertedDate DESC
+        `
       );
     return result.recordset;
   } catch (err) {
@@ -165,7 +223,16 @@ const getOrdersByStatus = async (data) => {
       .request()
       .input("id", sql.VarChar, data)
       .query(
-        "Select top 50 * from order_head WITH (NOLOCK) where status=@id order by InsertedDate desc"
+        `
+        SELECT TOP 100 OH.brend_id,OH.clientcode,OH.clorderno,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
+        OH.promostatus,OH.record_id,OH.RouteType,OH.specode,OH.status,SC.COLOR ORDERKIND_COLOR,SC.NAME ORDERKIND_NAME, 
+        SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM order_head OH
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_ORDERKIND_CODES SC ON SC.STATUS_ID=OH.orderkind
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_STATUS_CODES SC2 ON SC2.STATUS_ID=OH.status
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=OH.brend_id
+        WHERE OH.status=@id
+        ORDER BY OH.InsertedDate DESC
+        `
       );
     return result.recordset;
   } catch (err) {
@@ -205,4 +272,5 @@ module.exports = {
   updateOrderStatus,
   getLogoOrdersByFilter,
   getLogoOrdersBySearch,
+  getDelayedOrders,
 };

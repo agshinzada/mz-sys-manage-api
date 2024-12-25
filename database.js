@@ -97,10 +97,60 @@ const config5 = {
   },
 };
 
+const config6 = {
+  user: process.env.DB_USER,
+  password: process.env.DB_PWD,
+  database: process.env.DB_MOBIMV2,
+  server: process.env.DB_HOST,
+  options: {
+    encrypt: false,
+    trustServerCertificate: true, // change to true for local dev / self-signed certs
+    enableArithAbort: true,
+    connectionTimeout: 15000,
+    requestTimeout: 30000,
+    pool: {
+      max: 50,
+      min: 0,
+      idleTimeoutMillis: 30000,
+      acquireTimeoutMillis: 30000,
+    },
+  },
+};
+
+const config7 = {
+  user: process.env.DB_USER,
+  password: process.env.DB_PWD,
+  database: process.env.DB_ARCHIVE,
+  server: process.env.DB_HOST,
+  options: {
+    encrypt: false,
+    trustServerCertificate: true, // change to true for local dev / self-signed certs
+    enableArithAbort: true,
+    connectionTimeout: 15000,
+    requestTimeout: 30000,
+    pool: {
+      max: 50,
+      min: 0,
+      idleTimeoutMillis: 30000,
+      acquireTimeoutMillis: 30000,
+    },
+  },
+};
+
 const poolMobim = new sql.ConnectionPool(config);
 const poolClient = new sql.ConnectionPool(config2);
 const poolSYS = new sql.ConnectionPool(config3);
 const poolMazarina = new sql.ConnectionPool(config4);
 const poolMain = new sql.ConnectionPool(config5);
+const poolMobimV2 = new sql.ConnectionPool(config6);
+const poolArchive = new sql.ConnectionPool(config7);
 
-module.exports = { poolMobim, poolClient, poolSYS, poolMazarina, poolMain };
+module.exports = {
+  poolMobim,
+  poolClient,
+  poolSYS,
+  poolMazarina,
+  poolMain,
+  poolMobimV2,
+  poolArchive,
+};

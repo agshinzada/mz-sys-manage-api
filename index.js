@@ -23,10 +23,18 @@ const mobimConnRoute = require("./routes/mobim/connection");
 const mobimServiceRoute = require("./routes/mobim/service");
 const reportService = require("./routes/report");
 const sysService = require("./routes/sys");
+const archiveUserRoute = require("./routes/archive/user");
+const archiveLogRoute = require("./routes/archive/log");
+const logger = require("./logger");
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use((req, res, next) => {
+  logger.info(`${req.method} ${req.url}`);
+  next();
+});
 
 app.use("/api/orders", orderRoute);
 app.use("/api/payments", paymentRoute);
@@ -50,6 +58,14 @@ app.use("/api/mobim/connections", mobimConnRoute);
 app.use("/api/mobim/services", mobimServiceRoute);
 
 app.use("/api/reports", reportService);
+
+app.use("/api/archive/users", archiveUserRoute);
+app.use("/api/archive/logs", archiveLogRoute);
+
+app.use((err, req, res, next) => {
+  logger.error(err.stack);
+  res.status(500).send("Something went wrong!");
+});
 
 app.get("/api", (req, res) => {
   res.status(200).send("Server connected!");

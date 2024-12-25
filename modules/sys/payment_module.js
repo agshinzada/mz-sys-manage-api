@@ -4,11 +4,33 @@ const sql = require("mssql");
 const getPayments = async () => {
   try {
     await poolMobim.connect();
-    const result = await poolMobim
-      .request()
-      .query(
-        `Select * from payment_lines WITH (NOLOCK) where status = 0 order by InsertedDate desc`
-      );
+    const result = await poolMobim.request().query(
+      `Select PL.amount,PL.brend_id,PL.clientcode,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
+        PL.rec_i,PL.sign,PL.status,PL.trcode,SC.COLOR STATUS_COLOR,SC.NAME STATUS_NAME,SB.NAME BRAND_NAME
+        from payment_lines PL
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_STATUS_CODES SC ON SC.STATUS_ID=PL.status
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=PL.brend_id
+        where PL.status = 0 
+        order by PL.InsertedDate desc`
+    );
+    return result.recordset;
+  } catch (err) {
+    throw err;
+  } finally {
+    poolMobim.release();
+  }
+};
+
+const getDelayedPayments = async () => {
+  try {
+    await poolMobim.connect();
+    const result = await poolMobim.request().query(
+      `Select PL.amount,PL.brend_id,PL.clientcode,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
+        PL.rec_i,PL.sign,PL.status,PL.trcode,SB.NAME BRAND_NAME
+         from payment_lines PL
+         LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=PL.brend_id 
+         where PL.status = 0 and DATEDIFF(MINUTE, PL.InsertedDate, GETDATE()) >= 6`
+    );
     return result.recordset;
   } catch (err) {
     throw err;
@@ -24,7 +46,14 @@ const getPaymentsByClientCode = async (data) => {
       .request()
       .input("client", sql.VarChar, data)
       .query(
-        "Select * from payment_lines WITH (NOLOCK) where clientcode like @client order by InsertedDate desc"
+        `
+        Select top 50 PL.amount,PL.brend_id,PL.clientcode,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
+        PL.rec_i,PL.sign,PL.status,PL.trcode,SC.COLOR STATUS_COLOR,SC.NAME STATUS_NAME,SB.NAME BRAND_NAME
+        from payment_lines PL
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_STATUS_CODES SC ON SC.STATUS_ID=PL.status
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=PL.brend_id
+        where PL.clientcode like @client
+        order by PL.InsertedDate desc`
       );
 
     return result.recordset;
@@ -41,7 +70,14 @@ const getPaymentsByOrderId = async (data) => {
       .request()
       .input("id", sql.VarChar, data)
       .query(
-        "Select * from payment_lines WITH (NOLOCK) where order_id=@id order by InsertedDate desc"
+        `
+        Select PL.amount,PL.brend_id,PL.clientcode,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
+        PL.rec_i,PL.sign,PL.status,PL.trcode,SC.COLOR STATUS_COLOR,SC.NAME STATUS_NAME,SB.NAME BRAND_NAME
+        from payment_lines PL
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_STATUS_CODES SC ON SC.STATUS_ID=PL.status
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=PL.brend_id
+        where PL.order_id=@id
+        order by PL.InsertedDate desc`
       );
     return result.recordset;
   } catch (err) {
@@ -57,7 +93,14 @@ const getPaymentsByDeviceId = async (data) => {
       .request()
       .input("id", sql.VarChar, data)
       .query(
-        "Select * from payment_lines WITH (NOLOCK) where device_id=@id order by InsertedDate desc"
+        `
+         Select top 50 PL.amount,PL.brend_id,PL.clientcode,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
+        PL.rec_i,PL.sign,PL.status,PL.trcode,SC.COLOR STATUS_COLOR,SC.NAME STATUS_NAME,SB.NAME BRAND_NAME
+        from payment_lines PL
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_STATUS_CODES SC ON SC.STATUS_ID=PL.status
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=PL.brend_id
+        where PL.device_id=@id
+        order by PL.InsertedDate desc`
       );
     return result.recordset;
   } catch (err) {
@@ -73,7 +116,14 @@ const getPaymentsByRecordId = async (data) => {
       .request()
       .input("id", sql.VarChar, data)
       .query(
-        "Select * from payment_lines WITH (NOLOCK) where rec_id=@id order by InsertedDate desc"
+        `
+        Select PL.amount,PL.brend_id,PL.clientcode,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
+        PL.rec_i,PL.sign,PL.status,PL.trcode,SC.COLOR STATUS_COLOR,SC.NAME STATUS_NAME,SB.NAME BRAND_NAME
+        from payment_lines PL
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_STATUS_CODES SC ON SC.STATUS_ID=PL.status
+        LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=PL.brend_id
+        where PL.rec_id=@id
+        order by PL.InsertedDate desc`
       );
     return result.recordset;
   } catch (err) {
@@ -128,4 +178,5 @@ module.exports = {
   getPaymentsByOrderId,
   getPaymentsByRecordId,
   getPaymentRemain,
+  getDelayedPayments,
 };

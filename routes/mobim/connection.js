@@ -28,38 +28,55 @@ router.get("/:name", auth, (req, res) => {
     });
 });
 
-// router.post("/", auth, (req, res) => {
-//   brandModule
-//     .postBrand(req.body)
-//     .then((response) => {
-//       const dat = (response && response[0]) || [];
-//       if (dat?.ErrorNumber) {
-//         res.status(500).send(dat.ErrorMessage);
-//       } else {
-//         res.status(200).send("Əlavə edildi");
-//       }
-//     })
-//     .catch((error) => {
-//       logger.error(`POST /clients/brands error : ${error.message}`);
-//       res.status(500).send(error.message);
-//     });
-// });
+router.post("/", auth, (req, res) => {
+  connModule
+    .postConnection(req.body)
+    .then((response) => {
+      const dat = (response && response[0]) || [];
+      if (dat?.ErrorNumber) {
+        res.status(500).send(dat.ErrorMessage);
+      } else {
+        res.status(200).send("Əlavə edildi");
+      }
+    })
+    .catch((error) => {
+      logger.error(`POST /clients/brands error : ${error.message}`);
+      res.status(500).send(error.message);
+    });
+});
 
-// router.put("/:id", auth, (req, res) => {
-//   brandModule
-//     .putBrand(req.body, req.params.id)
-//     .then((response) => {
-//       const dat = (response && response[0]) || [];
-//       if (dat?.ErrorNumber) {
-//         res.status(500).send(dat.ErrorMessage);
-//       } else {
-//         res.status(200).send("Düzəliş edildi");
-//       }
-//     })
-//     .catch((error) => {
-//       logger.error(`PUT /clients/brands error : ${error.message}`);
-//       res.status(500).send(error.message);
-//     });
-// });
+router.put("/:id", auth, (req, res) => {
+  connModule
+    .putConnection(req.body, req.params.id)
+    .then((response) => {
+      const dat = (response && response[0]) || [];
+      if (dat?.ErrorNumber) {
+        res.status(500).send(dat.ErrorMessage);
+      } else {
+        res.status(200).send("Düzəliş edildi");
+      }
+    })
+    .catch((error) => {
+      logger.error(`PUT /clients/brands error : ${error.message}`);
+      res.status(500).send(error.message);
+    });
+});
+
+router.delete("/:id", auth, (req, res) => {
+  connModule
+    .deleteConnection(req.params.id)
+    .then((response) => {
+      const dat = (response && response[0]) || [];
+      if (dat?.ErrorNumber) {
+        res.status(500).send(dat.ErrorMessage);
+      } else {
+        res.status(200).send("Bağlantı silindi!");
+      }
+    })
+    .catch((error) => {
+      logger.error(`PUT /clients/brands error : ${error.message}`);
+      res.status(500).send(error.message);
+    });
+});
 
 module.exports = router;

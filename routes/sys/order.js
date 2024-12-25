@@ -16,6 +16,18 @@ router.get("/", auth, (req, res) => {
     });
 });
 
+router.get("/delayed", auth, (req, res) => {
+  orderModule
+    .getDelayedOrders()
+    .then((response) => {
+      res.status(200).send(response);
+    })
+    .catch((error) => {
+      logger.error(`GET /orders/ error : ${error.message}`);
+      res.status(500).send(error.message);
+    });
+});
+
 router.get("/lines", auth, (req, res) => {
   orderModule
     .getOrderLinesByOrderId(req.query.orderId)

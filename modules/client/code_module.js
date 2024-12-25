@@ -25,7 +25,7 @@ const createCodes = async (data) => {
         .request()
         .input("brandCode", sql.VarChar, data.brandCode)
         .input("routeCode", sql.VarChar, data.routeCode)
-        .input("brandId", sql.VarChar, data.brandId).query(`
+        .input("brandId", sql.VarChar, data.brandId.toString()).query(`
         BEGIN TRY
         declare @brand varchar(10)
         declare @route varchar(10)
