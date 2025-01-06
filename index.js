@@ -9,7 +9,6 @@ const paymentRoute = require("./routes/sys/payment");
 const deviceRoute = require("./routes/sys/device");
 const userRoute = require("./routes/sys/user");
 const regionRoute = require("./routes/client/region");
-const brandRoute = require("./routes/client/brand");
 const categoryRoute = require("./routes/client/clcategory");
 const discountRoute = require("./routes/client/discount");
 const campaignRoute = require("./routes/client/campaign");
@@ -43,7 +42,6 @@ app.use("/api/auth", userRoute);
 app.use("/api/sys", sysService);
 
 app.use("/api/clients/regions", regionRoute);
-app.use("/api/clients/brands", brandRoute);
 app.use("/api/clients/category", categoryRoute);
 app.use("/api/clients/discounts", discountRoute);
 app.use("/api/clients/campaigns", campaignRoute);

@@ -6,7 +6,7 @@ const getStatusCodes = async () => {
     await poolSYS.connect();
     const result = await poolSYS
       .request()
-      .query(`SELECT*FROM SYS_STATUS_CODES`);
+      .query(`SELECT*FROM ${process.env.ORDERSTATUS_TABLE}`);
 
     return result.recordset;
   } catch (err) {
@@ -20,7 +20,7 @@ const getOrderkindCodes = async () => {
     await poolSYS.connect();
     const result = await poolSYS
       .request()
-      .query(`SELECT*FROM SYS_ORDERKIND_CODES`);
+      .query(`SELECT*FROM ${process.env.ORDERKIND_TABLE}`);
 
     return result.recordset;
   } catch (err) {
@@ -32,7 +32,9 @@ const getOrderkindCodes = async () => {
 const getBrands = async () => {
   try {
     await poolSYS.connect();
-    const result = await poolSYS.request().query(`SELECT*FROM SYS_BRANDS`);
+    const result = await poolSYS
+      .request()
+      .query(`SELECT*FROM ${process.env.BRAND_TABLE}`);
 
     return result.recordset;
   } catch (err) {
@@ -48,7 +50,7 @@ const getBrandsBySearch = async (value) => {
     const result = await poolSYS
       .request()
       .input("name", sql.VarChar, `%${value}%`)
-      .query(`SELECT*FROM SYS_BRANDS WHERE NAME LIKE @name`);
+      .query(`SELECT*FROM ${process.env.BRAND_TABLE} WHERE NAME LIKE @name`);
     return result.recordset;
   } catch (err) {
     throw err;
@@ -68,7 +70,7 @@ const postBrand = async (data) => {
       .input("nr", sql.Int, data.nr)
       .input("status", sql.Int, data.status).query(`
         BEGIN TRY
-        INSERT INTO SYS_BRANDS (NAME,BRAND_TYPE,BRAND_CODE,SYS_ID,STATUS) VALUES (@name,@type,@code,@nr,@status)
+        INSERT INTO ${process.env.BRAND_TABLE} (NAME,BRAND_TYPE,BRAND_CODE,SYS_ID,STATUS) VALUES (@name,@type,@code,@nr,@status)
         END TRY
             BEGIN CATCH
             SELECT
@@ -100,7 +102,7 @@ const putBrand = async (data, id) => {
       .input("status", sql.Int, data.status)
       .input("id", sql.Int, id).query(`
         BEGIN TRY
-        UPDATE SYS_BRANDS SET NAME=@name, BRAND_TYPE=@type, BRAND_CODE=@code, SYS_ID=@nr, STATUS=@status WHERE ID=@id
+        UPDATE ${process.env.BRAND_TABLE} SET NAME=@name, BRAND_TYPE=@type, BRAND_CODE=@code, SYS_ID=@nr, STATUS=@status WHERE ID=@id
         END TRY
             BEGIN CATCH
             SELECT
@@ -123,7 +125,9 @@ const putBrand = async (data, id) => {
 const getRegions = async () => {
   try {
     await poolSYS.connect();
-    const result = await poolSYS.request().query(`SELECT*FROM SYS_REGIONS`);
+    const result = await poolSYS
+      .request()
+      .query(`SELECT*FROM ${process.env.REGION_TABLE}`);
 
     return result.recordset;
   } catch (err) {
@@ -143,7 +147,7 @@ const postRegion = async (data) => {
       .input("codeId", sql.Int, data.codeId)
       .input("status", sql.Int, data.status).query(`
         BEGIN TRY
-        INSERT INTO SYS_REGIONS (NAME,SYS_ID,CODE_ID,STATUS) VALUES (@name,@sysId,@codeId,@status)
+        INSERT INTO ${process.env.REGION_TABLE} (NAME,SYS_ID,CODE_ID,STATUS) VALUES (@name,@sysId,@codeId,@status)
         END TRY
             BEGIN CATCH
             SELECT
@@ -174,7 +178,7 @@ const putRegion = async (data, id) => {
       .input("status", sql.Int, data.status)
       .input("id", sql.Int, id).query(`
         BEGIN TRY
-        UPDATE SYS_REGIONS SET NAME=@name, SYS_ID=@sysId, CODE_ID=@codeId, STATUS=@status WHERE ID=@id
+        UPDATE ${process.env.REGION_TABLE} SET NAME=@name, SYS_ID=@sysId, CODE_ID=@codeId, STATUS=@status WHERE ID=@id
         END TRY
             BEGIN CATCH
             SELECT
@@ -200,7 +204,9 @@ const getStatusCodesBySearch = async (value) => {
     const result = await poolSYS
       .request()
       .input("value", sql.NVarChar, `%${value}%`)
-      .query(`SELECT*FROM SYS_STATUS_CODES WHERE NAME LIKE @value`);
+      .query(
+        `SELECT*FROM ${process.env.ORDERSTATUS_TABLE} WHERE NAME LIKE @value`
+      );
 
     return result.recordset;
   } catch (err) {
@@ -215,7 +221,9 @@ const getOrderkindCodesBySearch = async (value) => {
     const result = await poolSYS
       .request()
       .input("value", sql.NVarChar, `%${value}%`)
-      .query(`SELECT*FROM SYS_ORDERKIND_CODES WHERE NAME LIKE @value`);
+      .query(
+        `SELECT*FROM ${process.env.ORDERKIND_TABLE} WHERE NAME LIKE @value`
+      );
 
     return result.recordset;
   } catch (err) {
@@ -235,7 +243,7 @@ const postStatus = async (data) => {
       .input("color", sql.VarChar, data.color)
       .input("status", sql.Int, data.status)
       .query(
-        `INSERT INTO SYS_STATUS_CODES (STATUS_ID,NAME,COLOR,STATUS) VALUES (@statusId,@name,@color,@status)`
+        `INSERT INTO ${process.env.ORDERSTATUS_TABLE} (STATUS_ID,NAME,COLOR,STATUS) VALUES (@statusId,@name,@color,@status)`
       );
 
     return result.recordset;
@@ -255,7 +263,7 @@ const postOrderkind = async (data) => {
       .input("color", sql.VarChar, data.color)
       .input("status", sql.Int, data.status)
       .query(
-        `INSERT INTO SYS_ORDERKIND_CODES (STATUS_ID,NAME,COLOR,STATUS) VALUES (@statusId,@name,@color,@status)`
+        `INSERT INTO ${process.env.ORDERKIND_TABLE} (STATUS_ID,NAME,COLOR,STATUS) VALUES (@statusId,@name,@color,@status)`
       );
 
     return result.recordset;
@@ -276,7 +284,7 @@ const putStatus = async (id, data) => {
       .input("color", sql.VarChar, data.color)
       .input("status", sql.Int, data.status)
       .query(
-        `UPDATE SYS_STATUS_CODES SET STATUS_ID=@statusId,NAME=@name,COLOR=@color,STATUS=@status WHERE ID=@id`
+        `UPDATE ${process.env.ORDERSTATUS_TABLE} SET STATUS_ID=@statusId,NAME=@name,COLOR=@color,STATUS=@status WHERE ID=@id`
       );
 
     return result.recordset;
@@ -297,7 +305,7 @@ const putOrderkind = async (id, data) => {
       .input("color", sql.VarChar, data.color)
       .input("status", sql.Int, data.status)
       .query(
-        `UPDATE SYS_ORDERKIND_CODES SET STATUS_ID=@statusId,NAME=@name,COLOR=@color,STATUS=@status WHERE ID=@id`
+        `UPDATE ${process.env.ORDERKIND_TABLE} SET STATUS_ID=@statusId,NAME=@name,COLOR=@color,STATUS=@status WHERE ID=@id`
       );
 
     return result.recordset;

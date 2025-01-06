@@ -6,7 +6,7 @@ const getServices = async () => {
     await poolMobim.connect();
     const result = await poolMobim
       .request()
-      .query(`SELECT*FROM riInstances WITH (NOLOCK)`);
+      .query(`SELECT*FROM ${process.env.SERVICES_TABLE} WITH (NOLOCK)`);
     return result.recordset;
   } catch (err) {
     throw err;
@@ -20,9 +20,9 @@ const getServiceTasks = async () => {
     const result = await poolMobim.request()
       .query(`SELECT RT.id, RT.date_,RT.begTime,RT.endTime,RT.branch,RT.department,RT.active,RT.task1,
         RT.task2,RT.task3,RT.task4,RT.task5,RG.NAME REGION_NAME,BR.NAME BRAND_NAME 
-        FROM riTasks RT WITH (NOLOCK)
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_REGIONS RG WITH (NOLOCK) ON RG.SYS_ID=RT.branch
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS BR WITH (NOLOCK) ON BR.SYS_ID=RT.department 
+        FROM ${process.env.TASKS_TABLE} RT WITH (NOLOCK)
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.REGION_TABLE} RG WITH (NOLOCK) ON RG.SYS_ID=RT.branch
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.BRAND_TABLE} BR WITH (NOLOCK) ON BR.SYS_ID=RT.department 
         ORDER BY RT.active DESC
 `);
     return result.recordset;

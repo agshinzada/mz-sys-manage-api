@@ -4,7 +4,9 @@ const sql = require("mssql");
 const getRegions = async () => {
   try {
     await poolSYS.connect();
-    const result = await poolSYS.request().query(`SELECT*FROM CLIENT_REGIONS`);
+    const result = await poolSYS
+      .request()
+      .query(`SELECT*FROM ${process.env.REGION_TABLE}`);
     return result.recordset;
   } catch (err) {
     throw err;
@@ -23,7 +25,7 @@ const postRegion = async (data) => {
       .input("codeId", sql.Int, data.codeId)
       .input("status", sql.Int, data.status).query(`
         BEGIN TRY
-        INSERT INTO CLIENT_REGIONS (NAME,ROOT_ID,CODE_ID,STATUS) VALUES (@name,@rootId,@codeId,@status)
+        INSERT INTO ${process.env.REGION_TABLE} (NAME,ROOT_ID,CODE_ID,STATUS) VALUES (@name,@rootId,@codeId,@status)
         END TRY
             BEGIN CATCH
             SELECT
@@ -54,7 +56,7 @@ const putRegion = async (data, id) => {
       .input("status", sql.Int, data.status)
       .input("id", sql.Int, id).query(`
         BEGIN TRY
-        UPDATE CLIENT_REGIONS SET NAME=@name, ROOT_ID=@rootId, CODE_ID=@codeId, STATUS=@status WHERE ID=@id
+        UPDATE ${process.env.REGION_TABLE} SET NAME=@name, ROOT_ID=@rootId, CODE_ID=@codeId, STATUS=@status WHERE ID=@id
         END TRY
             BEGIN CATCH
             SELECT

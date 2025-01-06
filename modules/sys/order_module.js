@@ -7,10 +7,10 @@ const getOrders = async () => {
     const result = await poolMobim.request().query(
       `SELECT OH.brend_id,OH.clientcode,OH.clorderno,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
         OH.promostatus,OH.record_id,OH.RouteType,OH.specode,OH.status,SC.COLOR ORDERKIND_COLOR,SC.NAME ORDERKIND_NAME, 
-        SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM order_head OH
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_ORDERKIND_CODES SC ON SC.STATUS_ID=OH.orderkind
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_STATUS_CODES SC2 ON SC2.STATUS_ID=OH.status
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=OH.brend_id
+        SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM ${process.env.ORDER_HEAD_TABLE} OH
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERKIND_TABLE} SC ON SC.STATUS_ID=OH.orderkind
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERSTATUS_TABLE} SC2 ON SC2.STATUS_ID=OH.status
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.BRAND_TABLE} SB ON SB.SYS_ID=OH.brend_id
         WHERE OH.status=0
         ORDER BY OH.InsertedDate DESC`
     );
@@ -29,9 +29,9 @@ const getDelayedOrders = async () => {
     const result = await poolMobim.request().query(
       `SELECT OH.brend_id,OH.clientcode,OH.clorderno,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
         OH.promostatus,OH.record_id,OH.RouteType,OH.specode,OH.status,SC.COLOR ORDERKIND_COLOR,SC.NAME ORDERKIND_NAME, 
-       SB.NAME BRAND_NAME FROM order_head OH
-      LEFT JOIN WEB_APP_MANAGE_DB..SYS_ORDERKIND_CODES SC ON SC.STATUS_ID=OH.orderkind
-      LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=OH.brend_id
+       SB.NAME BRAND_NAME FROM ${process.env.ORDER_HEAD_TABLE} OH
+      LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERKIND_TABLE} SC ON SC.STATUS_ID=OH.orderkind
+      LEFT JOIN ${process.env.DB_SYS}..${process.env.BRAND_TABLE} SB ON SB.SYS_ID=OH.brend_id
       WHERE OH.STATUS=0 AND DATEDIFF(MINUTE, OH.InsertedDate, GETDATE()) >= 6`
     );
     return result.recordset;
@@ -50,7 +50,7 @@ const updateOrderStatus = async (data) => {
       .input("code", sql.Int, data.status)
       .input("id", sql.Int, data.recordId).query(`
         BEGIN TRY
-        update order_head set status = @code where record_id = @id
+        update ${process.env.ORDER_HEAD_TABLE} set status = @code where record_id = @id
         END TRY
             BEGIN CATCH
             SELECT
@@ -81,9 +81,9 @@ const getLogoOrdersByFilter = async (data) => {
       .input("to", sql.VarChar, data.to)
       .query(
         `SELECT TOP (100) ORF.DATE_,FICHENO,DOCODE,CLC.CODE,CLC.DEFINITION_,SLS.CODE RUT,ORF.SOURCEINDEX DELIVERY,ROUND(NETTOTAL,2) NETTOTAL 
-        FROM LG_013_01_ORFICHE ORF WITH (NOLOCK)
-        LEFT JOIN LG_013_CLCARD CLC WITH (NOLOCK) ON ORF.CLIENTREF=CLC.LOGICALREF
-        LEFT JOIN maindb..LG_SLSMAN SLS WITH (NOLOCK) ON SLS.LOGICALREF=ORF.SALESMANREF AND FIRMNR=13
+        FROM ${process.env.ORFICHE_TABLE} ORF WITH (NOLOCK)
+        LEFT JOIN ${process.env.CLCARD_TABLE} CLC WITH (NOLOCK) ON ORF.CLIENTREF=CLC.LOGICALREF
+        LEFT JOIN ${process.env.DB_MAIN}..${process.env.SLSMAN_TABLE} SLS WITH (NOLOCK) ON SLS.LOGICALREF=ORF.SALESMANREF AND FIRMNR=13
         WHERE DOCODE= @status AND CONVERT(DATE,DATE_) BETWEEN @from AND @to ORDER BY DATE_ DESC`
       );
 
@@ -103,9 +103,9 @@ const getLogoOrdersBySearch = async (data) => {
       .input("code", sql.VarChar, data)
       .query(
         `SELECT TOP (20) ORF.DATE_,FICHENO,DOCODE,CLC.CODE,CLC.DEFINITION_,SLS.CODE RUT,ORF.SOURCEINDEX DELIVERY,ROUND(NETTOTAL,2) NETTOTAL 
-        FROM LG_013_01_ORFICHE ORF WITH (NOLOCK)
-        LEFT JOIN LG_013_CLCARD CLC WITH (NOLOCK) ON ORF.CLIENTREF=CLC.LOGICALREF
-        LEFT JOIN maindb..LG_SLSMAN SLS WITH (NOLOCK) ON SLS.LOGICALREF=ORF.SALESMANREF AND FIRMNR=13
+        FROM ${process.env.ORFICHE_TABLE} ORF WITH (NOLOCK)
+        LEFT JOIN ${process.env.CLCARD_TABLE} CLC WITH (NOLOCK) ON ORF.CLIENTREF=CLC.LOGICALREF
+        LEFT JOIN ${process.env.DB_MAIN}..${process.env.SLSMAN_TABLE} SLS WITH (NOLOCK) ON SLS.LOGICALREF=ORF.SALESMANREF AND FIRMNR=13
         WHERE CLC.CODE=@code ORDER BY DATE_ DESC`
       );
 
@@ -127,10 +127,10 @@ const getOrdersByClientCode = async (data) => {
         `
         SELECT TOP 100 OH.brend_id,OH.clientcode,OH.clorderno,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
         OH.promostatus,OH.record_id,OH.RouteType,OH.specode,OH.status,SC.COLOR ORDERKIND_COLOR,SC.NAME ORDERKIND_NAME, 
-        SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM order_head OH
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_ORDERKIND_CODES SC ON SC.STATUS_ID=OH.orderkind
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_STATUS_CODES SC2 ON SC2.STATUS_ID=OH.status
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=OH.brend_id
+        SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM ${process.env.ORDER_HEAD_TABLE} OH
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERKIND_TABLE} SC ON SC.STATUS_ID=OH.orderkind
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERSTATUS_TABLE} SC2 ON SC2.STATUS_ID=OH.status
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.BRAND_TABLE} SB ON SB.SYS_ID=OH.brend_id
         WHERE OH.clientcode like @client
         ORDER BY OH.InsertedDate DESC
         `
@@ -153,10 +153,10 @@ const getOrdersByOrderId = async (data) => {
       .query(
         `SELECT OH.brend_id,OH.clientcode,OH.clorderno,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
         OH.promostatus,OH.record_id,OH.RouteType,OH.specode,OH.status,SC.COLOR ORDERKIND_COLOR,SC.NAME ORDERKIND_NAME, 
-        SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM order_head OH
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_ORDERKIND_CODES SC ON SC.STATUS_ID=OH.orderkind
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_STATUS_CODES SC2 ON SC2.STATUS_ID=OH.status
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=OH.brend_id
+        SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM ${process.env.ORDER_HEAD_TABLE} OH
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERKIND_TABLE} SC ON SC.STATUS_ID=OH.orderkind
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERSTATUS_TABLE} SC2 ON SC2.STATUS_ID=OH.status
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.BRAND_TABLE} SB ON SB.SYS_ID=OH.brend_id
         WHERE OH.order_id=@id
         ORDER BY OH.InsertedDate DESC`
       );
@@ -176,10 +176,10 @@ const getOrdersByDeviceId = async (data) => {
       .query(
         `SELECT TOP 100 OH.brend_id,OH.clientcode,OH.clorderno,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
         OH.promostatus,OH.record_id,OH.RouteType,OH.specode,OH.status,SC.COLOR ORDERKIND_COLOR,SC.NAME ORDERKIND_NAME, 
-        SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM order_head OH
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_ORDERKIND_CODES SC ON SC.STATUS_ID=OH.orderkind
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_STATUS_CODES SC2 ON SC2.STATUS_ID=OH.status
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=OH.brend_id
+        SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM ${process.env.ORDER_HEAD_TABLE} OH
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERKIND_TABLE} SC ON SC.STATUS_ID=OH.orderkind
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERSTATUS_TABLE} SC2 ON SC2.STATUS_ID=OH.status
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.BRAND_TABLE} SB ON SB.SYS_ID=OH.brend_id
         WHERE OH.device_id=@id
         ORDER BY OH.InsertedDate DESC
         `
@@ -201,10 +201,10 @@ const getOrdersByRecordId = async (data) => {
         `
         SELECT OH.brend_id,OH.clientcode,OH.clorderno,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
         OH.promostatus,OH.record_id,OH.RouteType,OH.specode,OH.status,SC.COLOR ORDERKIND_COLOR,SC.NAME ORDERKIND_NAME, 
-        SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM order_head OH
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_ORDERKIND_CODES SC ON SC.STATUS_ID=OH.orderkind
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_STATUS_CODES SC2 ON SC2.STATUS_ID=OH.status
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=OH.brend_id
+        SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM ${process.env.ORDER_HEAD_TABLE} OH
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERKIND_TABLE} SC ON SC.STATUS_ID=OH.orderkind
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERSTATUS_TABLE} SC2 ON SC2.STATUS_ID=OH.status
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.BRAND_TABLE} SB ON SB.SYS_ID=OH.brend_id
         WHERE OH.record_id=@id
         ORDER BY OH.InsertedDate DESC
         `
@@ -226,10 +226,10 @@ const getOrdersByStatus = async (data) => {
         `
         SELECT TOP 100 OH.brend_id,OH.clientcode,OH.clorderno,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
         OH.promostatus,OH.record_id,OH.RouteType,OH.specode,OH.status,SC.COLOR ORDERKIND_COLOR,SC.NAME ORDERKIND_NAME, 
-        SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM order_head OH
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_ORDERKIND_CODES SC ON SC.STATUS_ID=OH.orderkind
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_STATUS_CODES SC2 ON SC2.STATUS_ID=OH.status
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=OH.brend_id
+        SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM ${process.env.ORDER_HEAD_TABLE} OH
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERKIND_TABLE} SC ON SC.STATUS_ID=OH.orderkind
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERSTATUS_TABLE} SC2 ON SC2.STATUS_ID=OH.status
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.BRAND_TABLE} SB ON SB.SYS_ID=OH.brend_id
         WHERE OH.status=@id
         ORDER BY OH.InsertedDate DESC
         `
@@ -249,8 +249,8 @@ const getOrderLinesByOrderId = async (data) => {
       .request()
       .input("id", sql.VarChar, data)
       .query(
-        `select*from order_lines ol WITH (NOLOCK)
-        left join mazarina2024..LG_013_ITEMS IT on ol.productref=IT.LOGICALREF
+        `select*from ${process.env.ORDER_LINES_TABLE} ol WITH (NOLOCK)
+        left join ${process.env.DB_MAZARINA}..${process.env.ITEMS_TABLE} IT on ol.productref=IT.LOGICALREF
         where ol.order_id = @id`
       );
     return result.recordset;

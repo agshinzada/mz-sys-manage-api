@@ -6,7 +6,7 @@ const getConnections = async () => {
     await poolMobim.connect();
     const result = await poolMobim
       .request()
-      .query(`SELECT*FROM local_connections WITH (NOLOCK)`);
+      .query(`SELECT*FROM ${process.env.CONNECTION_TABLE} WITH (NOLOCK)`);
     return result.recordset;
   } catch (err) {
     throw err;
@@ -22,7 +22,7 @@ const getConnectionsBySearch = async (value) => {
       .request()
       .input("name", sql.VarChar, `%${value}%`)
       .query(
-        `SELECT*FROM local_connections WITH (NOLOCK) WHERE c_conn_name LIKE @name`
+        `SELECT*FROM ${process.env.CONNECTION_TABLE} WITH (NOLOCK) WHERE c_conn_name LIKE @name`
       );
     return result.recordset;
   } catch (err) {
@@ -46,7 +46,7 @@ const postConnection = async (data) => {
       .input("period", sql.VarChar, data.period)
       .input("brand", sql.VarChar, data.brand).query(`
         BEGIN TRY
-        INSERT INTO local_connections (c_conn_name, c_server, c_database, c_username, 
+        INSERT INTO ${process.env.CONNECTION_TABLE} (c_conn_name, c_server, c_database, c_username, 
         c_password, c_firmno, c_period, c_brend) 
         VALUES (@name,@server,@database,@username,@password,@firmNo,@period,@brand)
         END TRY
@@ -83,7 +83,7 @@ const putConnection = async (data, id) => {
       .input("brand", sql.VarChar, data.brand)
       .input("id", sql.Int, id).query(`
         BEGIN TRY
-        UPDATE local_connections 
+        UPDATE ${process.env.CONNECTION_TABLE} 
         SET c_conn_name=@name, c_server=@server, c_database=@database, c_username=@username, 
         c_password=@password, c_firmno=@firmNo, c_period=@period, c_brend=@brand
         WHERE c_id=@id
@@ -111,7 +111,7 @@ const deleteConnection = async (id) => {
     await poolMobim.connect();
     const result = await poolMobim.request().input("id", sql.Int, id).query(`
         BEGIN TRY
-        DELETE FROM local_connections
+        DELETE FROM ${process.env.CONNECTION_TABLE}
         WHERE c_id=@id
         END TRY
             BEGIN CATCH

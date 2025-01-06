@@ -4,7 +4,9 @@ const sql = require("mssql");
 const getDelivery = async () => {
   try {
     await poolSYS.connect();
-    const result = await poolSYS.request().query(`SELECT*FROM CLIENT_DELIVERY`);
+    const result = await poolSYS
+      .request()
+      .query(`SELECT*FROM ${process.env.CLIENT_DELIVERY_TABLE}`);
     return result.recordset;
   } catch (err) {
     throw err;
@@ -20,7 +22,7 @@ const getDeliveryBySearch = async (value) => {
       .request()
       .input("name", sql.VarChar, `%${value}%`)
       .query(
-        `SELECT*FROM CLIENT_DELIVERY WHERE NAME LIKE @name OR CODE LIKE @name`
+        `SELECT*FROM ${process.env.CLIENT_DELIVERY_TABLE} WHERE NAME LIKE @name OR CODE LIKE @name`
       );
     return result.recordset;
   } catch (err) {
@@ -40,7 +42,7 @@ const postDelivery = async (data) => {
       .input("regionId", sql.Int, data.regionId)
       .input("status", sql.Int, data.status).query(`
         BEGIN TRY
-        INSERT INTO CLIENT_DELIVERY (CODE,NAME,REGION_ID,STATUS) VALUES (@code,@name,@regionId,@status)
+        INSERT INTO ${process.env.CLIENT_DELIVERY_TABLE} (CODE,NAME,REGION_ID,STATUS) VALUES (@code,@name,@regionId,@status)
         END TRY
             BEGIN CATCH
             SELECT
@@ -71,7 +73,7 @@ const putDelivery = async (data, id) => {
       .input("status", sql.Int, data.status)
       .input("id", sql.Int, id).query(`
         BEGIN TRY
-        UPDATE CLIENT_DELIVERY SET CODE=@code, NAME=@name, REGION_ID=@regionId, STATUS=@status WHERE ID=@id
+        UPDATE ${process.env.CLIENT_DELIVERY_TABLE} SET CODE=@code, NAME=@name, REGION_ID=@regionId, STATUS=@status WHERE ID=@id
         END TRY
             BEGIN CATCH
             SELECT

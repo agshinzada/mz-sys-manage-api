@@ -6,7 +6,7 @@ const getDevices = async () => {
     await poolMobim.connect();
     const result = await poolMobim
       .request()
-      .query(`SELECT*FROM Device_Root WITH (NOLOCK)`);
+      .query(`SELECT*FROM ${process.env.DEVICE_TABLE} WITH (NOLOCK)`);
     return result.recordset;
   } catch (err) {
     throw err;
@@ -22,7 +22,7 @@ const getDevicesBySearch = async (value) => {
       .request()
       .input("name", sql.VarChar, `%${value}%`)
       .query(
-        `SELECT*FROM Device_Root WITH (NOLOCK) WHERE RootNo LIKE @name OR Device LIKE @name OR SyncHTTP LIKE @name`
+        `SELECT*FROM ${process.env.DEVICE_TABLE} WITH (NOLOCK) WHERE RootNo LIKE @name OR Device LIKE @name OR SyncHTTP LIKE @name`
       );
     return result.recordset;
   } catch (err) {
@@ -57,7 +57,7 @@ const postDevice = async (data) => {
       .input("virtualWare", sql.VarChar, data.virtualWare)
       .input("bozukWare", sql.VarChar, data.bozukWare).query(`
         BEGIN TRY
-        INSERT INTO Device_Root (SyncHTTP, Brends, Device, RootNo, 
+        INSERT INTO ${process.env.DEVICE_TABLE} (SyncHTTP, Brends, Device, RootNo, 
         RootType, SecCode, ServerName, DatabaseName,FirmNo, PeriodNo, RegionalCode, FirmBrend,
         DeviceReg, ParentDevice, UserName, Password, MainWh, VirtualWH, BozukWh) 
         VALUES (@name,@brands,@deviceId,@route,@routeType,@regionType,@server,@database,
@@ -108,7 +108,7 @@ const putDevice = async (data, id) => {
       .input("bozukWare", sql.VarChar, data.bozukWare)
       .input("id", sql.Int, id).query(`
         BEGIN TRY
-        UPDATE Device_Root 
+        UPDATE ${process.env.DEVICE_TABLE} 
         SET SyncHTTP=@name, Brends=@brands, Device=@deviceId, RootNo=@route, 
         RootType=@routeType, SecCode=@regionType, ServerName=@server, DatabaseName=@database,
         FirmNo=@firmNo, PeriodNo=@periodNo, RegionalCode=@regionCode, FirmBrend=@brandCode,
@@ -139,7 +139,7 @@ const deleteDevice = async (id) => {
     await poolMobim.connect();
     const result = await poolMobim.request().input("id", sql.Int, id).query(`
         BEGIN TRY
-        DELETE FROM Device_Root
+        DELETE FROM ${process.env.DEVICE_TABLE}
         WHERE rec_id=@id
         END TRY
             BEGIN CATCH

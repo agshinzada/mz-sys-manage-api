@@ -7,9 +7,9 @@ const getPayments = async () => {
     const result = await poolMobim.request().query(
       `Select PL.amount,PL.brend_id,PL.clientcode,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
         PL.rec_i,PL.sign,PL.status,PL.trcode,SC.COLOR STATUS_COLOR,SC.NAME STATUS_NAME,SB.NAME BRAND_NAME
-        from payment_lines PL
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_STATUS_CODES SC ON SC.STATUS_ID=PL.status
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=PL.brend_id
+        from ${process.env.PAYMENT_LINES_TABLE} PL
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERSTATUS_TABLE} SC ON SC.STATUS_ID=PL.status
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.BRAND_TABLE} SB ON SB.SYS_ID=PL.brend_id
         where PL.status = 0 
         order by PL.InsertedDate desc`
     );
@@ -27,8 +27,8 @@ const getDelayedPayments = async () => {
     const result = await poolMobim.request().query(
       `Select PL.amount,PL.brend_id,PL.clientcode,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
         PL.rec_i,PL.sign,PL.status,PL.trcode,SB.NAME BRAND_NAME
-         from payment_lines PL
-         LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=PL.brend_id 
+         from ${process.env.PAYMENT_LINES_TABLE} PL
+         LEFT JOIN ${process.env.DB_SYS}..${process.env.BRAND_TABLE} SB ON SB.SYS_ID=PL.brend_id 
          where PL.status = 0 and DATEDIFF(MINUTE, PL.InsertedDate, GETDATE()) >= 6`
     );
     return result.recordset;
@@ -49,9 +49,9 @@ const getPaymentsByClientCode = async (data) => {
         `
         Select top 50 PL.amount,PL.brend_id,PL.clientcode,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
         PL.rec_i,PL.sign,PL.status,PL.trcode,SC.COLOR STATUS_COLOR,SC.NAME STATUS_NAME,SB.NAME BRAND_NAME
-        from payment_lines PL
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_STATUS_CODES SC ON SC.STATUS_ID=PL.status
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=PL.brend_id
+        from ${process.env.PAYMENT_LINES_TABLE} PL
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERSTATUS_TABLE} SC ON SC.STATUS_ID=PL.status
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.BRAND_TABLE} SB ON SB.SYS_ID=PL.brend_id
         where PL.clientcode like @client
         order by PL.InsertedDate desc`
       );
@@ -73,9 +73,9 @@ const getPaymentsByOrderId = async (data) => {
         `
         Select PL.amount,PL.brend_id,PL.clientcode,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
         PL.rec_i,PL.sign,PL.status,PL.trcode,SC.COLOR STATUS_COLOR,SC.NAME STATUS_NAME,SB.NAME BRAND_NAME
-        from payment_lines PL
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_STATUS_CODES SC ON SC.STATUS_ID=PL.status
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=PL.brend_id
+        from ${process.env.PAYMENT_LINES_TABLE} PL
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERSTATUS_TABLE} SC ON SC.STATUS_ID=PL.status
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.BRAND_TABLE} SB ON SB.SYS_ID=PL.brend_id
         where PL.order_id=@id
         order by PL.InsertedDate desc`
       );
@@ -96,9 +96,9 @@ const getPaymentsByDeviceId = async (data) => {
         `
          Select top 50 PL.amount,PL.brend_id,PL.clientcode,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
         PL.rec_i,PL.sign,PL.status,PL.trcode,SC.COLOR STATUS_COLOR,SC.NAME STATUS_NAME,SB.NAME BRAND_NAME
-        from payment_lines PL
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_STATUS_CODES SC ON SC.STATUS_ID=PL.status
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=PL.brend_id
+        from ${process.env.PAYMENT_LINES_TABLE} PL
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERSTATUS_TABLE} SC ON SC.STATUS_ID=PL.status
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.BRAND_TABLE} SB ON SB.SYS_ID=PL.brend_id
         where PL.device_id=@id
         order by PL.InsertedDate desc`
       );
@@ -119,9 +119,9 @@ const getPaymentsByRecordId = async (data) => {
         `
         Select PL.amount,PL.brend_id,PL.clientcode,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
         PL.rec_i,PL.sign,PL.status,PL.trcode,SC.COLOR STATUS_COLOR,SC.NAME STATUS_NAME,SB.NAME BRAND_NAME
-        from payment_lines PL
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_STATUS_CODES SC ON SC.STATUS_ID=PL.status
-        LEFT JOIN WEB_APP_MANAGE_DB..SYS_BRANDS SB ON SB.SYS_ID=PL.brend_id
+        from ${process.env.PAYMENT_LINES_TABLE} PL
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERSTATUS_TABLE} SC ON SC.STATUS_ID=PL.status
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.BRAND_TABLE} SB ON SB.SYS_ID=PL.brend_id
         where PL.rec_id=@id
         order by PL.InsertedDate desc`
       );

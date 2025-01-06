@@ -4,7 +4,9 @@ const sql = require("mssql");
 const getUsers = async () => {
   try {
     await poolSYS.connect();
-    const result = await poolSYS.request().query(`SELECT*FROM CLIENT_USERS`);
+    const result = await poolSYS
+      .request()
+      .query(`SELECT*FROM ${process.env.CLIENT_USERS_TABLE}`);
     return result.recordset;
   } catch (err) {
     throw err;
@@ -19,7 +21,9 @@ const getUserBySearch = async (value) => {
     const result = await poolSYS
       .request()
       .input("name", sql.VarChar, `%${value}%`)
-      .query(`SELECT*FROM CLIENT_USERS WHERE NAME LIKE @name`);
+      .query(
+        `SELECT*FROM ${process.env.CLIENT_USERS_TABLE} WHERE NAME LIKE @name`
+      );
     return result.recordset;
   } catch (err) {
     throw err;
@@ -39,7 +43,7 @@ const postUser = async (data) => {
       .input("role", sql.VarChar, data.role)
       .input("status", sql.Int, data.status).query(`
         BEGIN TRY
-        INSERT INTO CLIENT_USERS (USERNAME,HASH_PASSWORD,REF,ROLE,STATUS) VALUES (@username,@password,@ref,@role,@status)
+        INSERT INTO ${process.env.CLIENT_USERS_TABLE} (USERNAME,HASH_PASSWORD,REF,ROLE,STATUS) VALUES (@username,@password,@ref,@role,@status)
         END TRY
             BEGIN CATCH
             SELECT
@@ -70,7 +74,7 @@ const putUser = async (data, id) => {
       .input("status", sql.Int, data.status)
       .input("id", sql.Int, id).query(`
         BEGIN TRY
-        UPDATE CLIENT_USERS SET USERNAME=@username, REF=@ref, ROLE=@role, STATUS=@status WHERE ID=@id
+        UPDATE ${process.env.CLIENT_USERS_TABLE} SET USERNAME=@username, REF=@ref, ROLE=@role, STATUS=@status WHERE ID=@id
         END TRY
             BEGIN CATCH
             SELECT
@@ -98,7 +102,7 @@ const putUserPassword = async (data, id) => {
       .input("password", sql.VarChar, data.password)
       .input("id", sql.Int, id).query(`
         BEGIN TRY
-        UPDATE CLIENT_USERS SET HASH_PASSWORD=@password WHERE ID=@id
+        UPDATE ${process.env.CLIENT_USERS_TABLE} SET HASH_PASSWORD=@password WHERE ID=@id
         END TRY
             BEGIN CATCH
             SELECT

@@ -4,7 +4,9 @@ const sql = require("mssql");
 const getUsers = async () => {
   try {
     await poolArchive.connect();
-    const result = await poolArchive.request().query(`SELECT*FROM USERS`);
+    const result = await poolArchive
+      .request()
+      .query(`SELECT*FROM ${process.env.ARCHIVE_USERS_TABLE}`);
     return result.recordset;
   } catch (err) {
     throw err;
@@ -19,7 +21,9 @@ const getUserBySearch = async (value) => {
     const result = await poolArchive
       .request()
       .input("name", sql.VarChar, `%${value}%`)
-      .query(`SELECT*FROM USERS WHERE NAME LIKE @name`);
+      .query(
+        `SELECT*FROM ${process.env.ARCHIVE_USERS_TABLE} WHERE NAME LIKE @name`
+      );
     return result.recordset;
   } catch (err) {
     throw err;
@@ -40,7 +44,7 @@ const postUser = async (data) => {
       .input("role", sql.VarChar, data.role)
       .input("status", sql.Int, data.status).query(`
         BEGIN TRY
-        INSERT INTO USERS (USERNAME,HASH_PASSWORD,NAME,SURNAME,ROLE,STATUS) VALUES (@username,@password,@name,@surname,@role,@status)
+        INSERT INTO ${process.env.ARCHIVE_USERS_TABLE} (USERNAME,HASH_PASSWORD,NAME,SURNAME,ROLE,STATUS) VALUES (@username,@password,@name,@surname,@role,@status)
         END TRY
             BEGIN CATCH
             SELECT
@@ -72,7 +76,7 @@ const putUser = async (data, id) => {
       .input("status", sql.Int, data.status)
       .input("id", sql.Int, id).query(`
         BEGIN TRY
-        UPDATE USERS SET USERNAME=@username, NAME=@name, SURNAME=@surname, ROLE=@role, STATUS=@status WHERE ID=@id
+        UPDATE ${process.env.ARCHIVE_USERS_TABLE} SET USERNAME=@username, NAME=@name, SURNAME=@surname, ROLE=@role, STATUS=@status WHERE ID=@id
         END TRY
             BEGIN CATCH
             SELECT
@@ -100,7 +104,7 @@ const putUserPassword = async (data, id) => {
       .input("password", sql.VarChar, data.password)
       .input("id", sql.Int, id).query(`
         BEGIN TRY
-        UPDATE USERS SET HASH_PASSWORD=@password WHERE ID=@id
+        UPDATE ${process.env.ARCHIVE_USERS_TABLE} SET HASH_PASSWORD=@password WHERE ID=@id
         END TRY
             BEGIN CATCH
             SELECT

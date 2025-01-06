@@ -8,7 +8,7 @@ const getDeviceDetailById = async (data) => {
       .request()
       .input("id", sql.VarChar, data)
       .query(
-        "select top 1 Brends,Device,RegionalCode,RootNo,SecCode,SyncHTTP from Device_Root WITH (NOLOCK) where Device=@id"
+        `select top 1 Brends,Device,RegionalCode,RootNo,SecCode,SyncHTTP from ${process.env.DEVICE_TABLE} WITH (NOLOCK) where Device=@id`
       );
 
     return result.recordset;

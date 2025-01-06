@@ -6,7 +6,7 @@ const getCategory = async () => {
     await poolSYS.connect();
     const result = await poolSYS
       .request()
-      .query(`SELECT*FROM CLIENT_GROUP_TYPES`);
+      .query(`SELECT*FROM ${process.env.CLIENT_GROUPTYPE_TABLE}`);
     return result.recordset;
   } catch (err) {
     throw err;
@@ -21,7 +21,9 @@ const getCategoryBySearch = async (value) => {
     const result = await poolSYS
       .request()
       .input("name", sql.VarChar, `%${value}%`)
-      .query(`SELECT*FROM CLIENT_GROUP_TYPES WHERE NAME LIKE @name`);
+      .query(
+        `SELECT*FROM ${process.env.CLIENT_GROUPTYPE_TABLE} WHERE NAME LIKE @name`
+      );
     return result.recordset;
   } catch (err) {
     throw err;
@@ -40,7 +42,7 @@ const postCategory = async (data) => {
       .input("abbr", sql.VarChar, data.abbr)
       .input("status", sql.Int, data.status).query(`
         BEGIN TRY
-        INSERT INTO CLIENT_GROUP_TYPES (NAME,CODE,ABBR,STATUS) VALUES (@name,@code,@abbr,@status)
+        INSERT INTO ${process.env.CLIENT_GROUPTYPE_TABLE} (NAME,CODE,ABBR,STATUS) VALUES (@name,@code,@abbr,@status)
         END TRY
             BEGIN CATCH
             SELECT
@@ -71,7 +73,7 @@ const putCategory = async (data, id) => {
       .input("status", sql.Int, data.status)
       .input("id", sql.Int, id).query(`
         BEGIN TRY
-        UPDATE CLIENT_GROUP_TYPES SET NAME=@name, CODE=@code, ABBR=@abbr, STATUS=@status WHERE ID=@id
+        UPDATE ${process.env.CLIENT_GROUPTYPE_TABLE} SET NAME=@name, CODE=@code, ABBR=@abbr, STATUS=@status WHERE ID=@id
         END TRY
             BEGIN CATCH
             SELECT

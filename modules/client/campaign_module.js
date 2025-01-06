@@ -4,7 +4,9 @@ const sql = require("mssql");
 const getCampaign = async () => {
   try {
     await poolSYS.connect();
-    const result = await poolSYS.request().query(`SELECT*FROM CLIENT_CAMPAIGN`);
+    const result = await poolSYS
+      .request()
+      .query(`SELECT*FROM ${process.env.CLIENT_CAMPAIGN_TABLE}`);
     return result.recordset;
   } catch (err) {
     throw err;
@@ -19,7 +21,9 @@ const getCampaignBySearch = async (value) => {
     const result = await poolSYS
       .request()
       .input("name", sql.VarChar, `%${value}%`)
-      .query(`SELECT*FROM CLIENT_CAMPAIGN WHERE CODE LIKE @name`);
+      .query(
+        `SELECT*FROM ${process.env.CLIENT_CAMPAIGN_TABLE} WHERE CODE LIKE @name`
+      );
     return result.recordset;
   } catch (err) {
     throw err;
@@ -39,7 +43,7 @@ const postCampaign = async (data) => {
       .input("type", sql.Int, data.type)
       .input("status", sql.Int, data.status).query(`
         BEGIN TRY
-        INSERT INTO CLIENT_CAMPAIGN (CODE,VALUE,EXPLANATION,TYPE_,STATUS) VALUES (@code,@value,@explanation,@type,@status)
+        INSERT INTO ${process.env.CLIENT_CAMPAIGN_TABLE} (CODE,VALUE,EXPLANATION,TYPE_,STATUS) VALUES (@code,@value,@explanation,@type,@status)
         END TRY
             BEGIN CATCH
             SELECT
@@ -71,7 +75,7 @@ const putCampaign = async (data, id) => {
       .input("status", sql.Int, data.status)
       .input("id", sql.Int, id).query(`
         BEGIN TRY
-        UPDATE CLIENT_CAMPAIGN SET CODE=@code, VALUE=@value, EXPLANATION=@explanation, TYPE_=@type, STATUS=@status WHERE ID=@id
+        UPDATE ${process.env.CLIENT_CAMPAIGN_TABLE} SET CODE=@code, VALUE=@value, EXPLANATION=@explanation, TYPE_=@type, STATUS=@status WHERE ID=@id
         END TRY
             BEGIN CATCH
             SELECT

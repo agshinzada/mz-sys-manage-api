@@ -4,7 +4,9 @@ const sql = require("mssql");
 const getVisitDay = async () => {
   try {
     await poolSYS.connect();
-    const result = await poolSYS.request().query(`SELECT*FROM CLIENT_VISITS`);
+    const result = await poolSYS
+      .request()
+      .query(`SELECT*FROM ${process.env.CLIENT_VISIT_TABLE}`);
     return result.recordset;
   } catch (err) {
     throw err;
@@ -19,7 +21,9 @@ const getVisitDayBySearch = async (value) => {
     const result = await poolSYS
       .request()
       .input("name", sql.VarChar, `%${value}%`)
-      .query(`SELECT*FROM CLIENT_VISITS WHERE NAME LIKE @name`);
+      .query(
+        `SELECT*FROM ${process.env.CLIENT_VISIT_TABLE} WHERE NAME LIKE @name`
+      );
     return result.recordset;
   } catch (err) {
     throw err;

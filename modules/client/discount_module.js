@@ -6,7 +6,7 @@ const getDiscounts = async () => {
     await poolSYS.connect();
     const result = await poolSYS
       .request()
-      .query(`SELECT*FROM CLIENT_DISCOUNTS`);
+      .query(`SELECT*FROM ${process.env.CLIENT_DISCOUNT_TABLE}`);
     return result.recordset;
   } catch (err) {
     throw err;
@@ -21,7 +21,9 @@ const getDiscountsBySearch = async (value) => {
     const result = await poolSYS
       .request()
       .input("name", sql.VarChar, `%${value}%`)
-      .query(`SELECT*FROM CLIENT_DISCOUNTS WHERE VALUE LIKE @name`);
+      .query(
+        `SELECT*FROM ${process.env.CLIENT_DISCOUNT_TABLE} WHERE VALUE LIKE @name`
+      );
     return result.recordset;
   } catch (err) {
     throw err;
@@ -40,7 +42,7 @@ const postDiscount = async (data) => {
       .input("brandId", sql.Int, data.brand)
       .input("status", sql.Int, data.status).query(`
         BEGIN TRY
-        INSERT INTO CLIENT_DISCOUNTS (VALUE,LABEL,BRAND_ID,STATUS) VALUES (@value,@label,@brandId,@status)
+        INSERT INTO ${process.env.CLIENT_DISCOUNT_TABLE} (VALUE,LABEL,BRAND_ID,STATUS) VALUES (@value,@label,@brandId,@status)
         END TRY
             BEGIN CATCH
             SELECT
@@ -70,7 +72,7 @@ const putDiscount = async (data, id) => {
       .input("status", sql.Int, data.status)
       .input("id", sql.Int, id).query(`
         BEGIN TRY
-        UPDATE CLIENT_DISCOUNTS SET VALUE=@value, LABEL=@label, STATUS=@status WHERE ID=@id
+        UPDATE ${process.env.CLIENT_DISCOUNT_TABLE} SET VALUE=@value, LABEL=@label, STATUS=@status WHERE ID=@id
         END TRY
             BEGIN CATCH
             SELECT
