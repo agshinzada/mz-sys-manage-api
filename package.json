@@ -1,5 +1,5 @@
 {
-  "name": "erp-sys-api",
+  "name": "mz-sys-manage-api",
   "version": "1.0.0",
   "description": "API for ERP sys controller web  application",
   "main": "index.js",
