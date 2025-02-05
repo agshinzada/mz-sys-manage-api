@@ -7,7 +7,7 @@ const getLogs = async () => {
     const result = await poolArchive
       .request()
       .query(
-        `SELECT*FROM ${process.env.ARCHIVE_LOGS_TABLE} ORDER BY INSERT_DATE DESC`
+        `SELECT TOP 200 *FROM ${process.env.ARCHIVE_LOGS_TABLE} ORDER BY INSERT_DATE DESC`
       );
     return result.recordset;
   } catch (err) {
@@ -23,7 +23,7 @@ const getLogsBySearch = async (data) => {
       .request()
       .input("code", sql.VarChar, `%${data}%`)
       .query(
-        `SELECT*FROM ${process.env.ARCHIVE_LOGS_TABLE} WHERE EXTRACTED_FICHENO LIKE @code ORDER BY INSERT_DATE DESC`
+        `SELECT TOP 200 *FROM ${process.env.ARCHIVE_LOGS_TABLE} WHERE EXTRACTED_FICHENO LIKE @code ORDER BY INSERT_DATE DESC`
       );
     return result.recordset;
   } catch (err) {

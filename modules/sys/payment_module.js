@@ -5,13 +5,16 @@ const getPayments = async () => {
   try {
     await poolMobim.connect();
     const result = await poolMobim.request().query(
-      `Select PL.amount,PL.brend_id,PL.clientcode,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
+      `
+      Select PL.amount,PL.brend_id,PL.clientcode,CLC.SPECODE,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
         PL.rec_i,PL.sign,PL.status,PL.trcode,SC.COLOR STATUS_COLOR,SC.NAME STATUS_NAME,SB.NAME BRAND_NAME
         from ${process.env.PAYMENT_LINES_TABLE} PL
         LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERSTATUS_TABLE} SC ON SC.STATUS_ID=PL.status
         LEFT JOIN ${process.env.DB_SYS}..${process.env.BRAND_TABLE} SB ON SB.SYS_ID=PL.brend_id
+        LEFT JOIN ${process.env.DB_MAZARINA}..${process.env.CLCARD_TABLE} CLC ON CLC.CODE = PL.clientcode collate Cyrillic_General_CI_AI
         where PL.status = 0 
-        order by PL.InsertedDate desc`
+        order by PL.InsertedDate desc
+      `
     );
     return result.recordset;
   } catch (err) {
@@ -25,10 +28,12 @@ const getDelayedPayments = async () => {
   try {
     await poolMobim.connect();
     const result = await poolMobim.request().query(
-      `Select PL.amount,PL.brend_id,PL.clientcode,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
-        PL.rec_i,PL.sign,PL.status,PL.trcode,SB.NAME BRAND_NAME
-         from ${process.env.PAYMENT_LINES_TABLE} PL
-         LEFT JOIN ${process.env.DB_SYS}..${process.env.BRAND_TABLE} SB ON SB.SYS_ID=PL.brend_id 
+      `Select PL.amount,PL.brend_id,PL.clientcode,CLC.SPECODE,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
+        PL.rec_i,PL.sign,PL.status,PL.trcode,SC.COLOR STATUS_COLOR,SC.NAME STATUS_NAME,SB.NAME BRAND_NAME
+        from ${process.env.PAYMENT_LINES_TABLE} PL
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERSTATUS_TABLE} SC ON SC.STATUS_ID=PL.status
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.BRAND_TABLE} SB ON SB.SYS_ID=PL.brend_id
+        LEFT JOIN ${process.env.DB_MAZARINA}..${process.env.CLCARD_TABLE} CLC ON CLC.CODE = PL.clientcode collate Cyrillic_General_CI_AI 
          where PL.status = 0 and DATEDIFF(MINUTE, PL.InsertedDate, GETDATE()) >= 6`
     );
     return result.recordset;
@@ -47,11 +52,12 @@ const getPaymentsByClientCode = async (data) => {
       .input("client", sql.VarChar, data)
       .query(
         `
-        Select top 50 PL.amount,PL.brend_id,PL.clientcode,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
+        Select TOP 200 PL.amount,PL.brend_id,PL.clientcode,CLC.SPECODE,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
         PL.rec_i,PL.sign,PL.status,PL.trcode,SC.COLOR STATUS_COLOR,SC.NAME STATUS_NAME,SB.NAME BRAND_NAME
         from ${process.env.PAYMENT_LINES_TABLE} PL
         LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERSTATUS_TABLE} SC ON SC.STATUS_ID=PL.status
         LEFT JOIN ${process.env.DB_SYS}..${process.env.BRAND_TABLE} SB ON SB.SYS_ID=PL.brend_id
+        LEFT JOIN ${process.env.DB_MAZARINA}..${process.env.CLCARD_TABLE} CLC ON CLC.CODE = PL.clientcode collate Cyrillic_General_CI_AI
         where PL.clientcode like @client
         order by PL.InsertedDate desc`
       );
@@ -71,11 +77,12 @@ const getPaymentsByOrderId = async (data) => {
       .input("id", sql.VarChar, data)
       .query(
         `
-        Select PL.amount,PL.brend_id,PL.clientcode,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
+       Select TOP 200 PL.amount,PL.brend_id,PL.clientcode,CLC.SPECODE,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
         PL.rec_i,PL.sign,PL.status,PL.trcode,SC.COLOR STATUS_COLOR,SC.NAME STATUS_NAME,SB.NAME BRAND_NAME
         from ${process.env.PAYMENT_LINES_TABLE} PL
         LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERSTATUS_TABLE} SC ON SC.STATUS_ID=PL.status
         LEFT JOIN ${process.env.DB_SYS}..${process.env.BRAND_TABLE} SB ON SB.SYS_ID=PL.brend_id
+        LEFT JOIN ${process.env.DB_MAZARINA}..${process.env.CLCARD_TABLE} CLC ON CLC.CODE = PL.clientcode collate Cyrillic_General_CI_AI
         where PL.order_id=@id
         order by PL.InsertedDate desc`
       );
@@ -94,11 +101,12 @@ const getPaymentsByDeviceId = async (data) => {
       .input("id", sql.VarChar, data)
       .query(
         `
-         Select top 50 PL.amount,PL.brend_id,PL.clientcode,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
+         Select TOP 200 PL.amount,PL.brend_id,PL.clientcode,CLC.SPECODE,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
         PL.rec_i,PL.sign,PL.status,PL.trcode,SC.COLOR STATUS_COLOR,SC.NAME STATUS_NAME,SB.NAME BRAND_NAME
         from ${process.env.PAYMENT_LINES_TABLE} PL
         LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERSTATUS_TABLE} SC ON SC.STATUS_ID=PL.status
         LEFT JOIN ${process.env.DB_SYS}..${process.env.BRAND_TABLE} SB ON SB.SYS_ID=PL.brend_id
+        LEFT JOIN ${process.env.DB_MAZARINA}..${process.env.CLCARD_TABLE} CLC ON CLC.CODE = PL.clientcode collate Cyrillic_General_CI_AI
         where PL.device_id=@id
         order by PL.InsertedDate desc`
       );
@@ -117,11 +125,12 @@ const getPaymentsByRecordId = async (data) => {
       .input("id", sql.VarChar, data)
       .query(
         `
-        Select PL.amount,PL.brend_id,PL.clientcode,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
+        Select TOP 200 PL.amount,PL.brend_id,PL.clientcode,CLC.SPECODE,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
         PL.rec_i,PL.sign,PL.status,PL.trcode,SC.COLOR STATUS_COLOR,SC.NAME STATUS_NAME,SB.NAME BRAND_NAME
         from ${process.env.PAYMENT_LINES_TABLE} PL
         LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERSTATUS_TABLE} SC ON SC.STATUS_ID=PL.status
         LEFT JOIN ${process.env.DB_SYS}..${process.env.BRAND_TABLE} SB ON SB.SYS_ID=PL.brend_id
+        LEFT JOIN ${process.env.DB_MAZARINA}..${process.env.CLCARD_TABLE} CLC ON CLC.CODE = PL.clientcode collate Cyrillic_General_CI_AI
         where PL.rec_id=@id
         order by PL.InsertedDate desc`
       );

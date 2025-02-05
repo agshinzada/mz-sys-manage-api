@@ -6,7 +6,7 @@ const getRoutes = async () => {
     await poolMain.connect();
     const result = await poolMain.request()
       .query(`SELECT CODE value,DEFINITION_ label FROM ${process.env.SLSMAN_TABLE} WITH (NOLOCK) 
-      WHERE FIRMNR=13`);
+      WHERE FIRMNR=${process.env.DB_FIRMNR}`);
     return result.recordset;
   } catch (err) {
     throw err;

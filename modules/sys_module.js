@@ -1,4 +1,4 @@
-const { poolSYS, poolMobimV2 } = require("../database");
+const { poolSYS } = require("../database");
 const sql = require("mssql");
 
 const getStatusCodes = async () => {

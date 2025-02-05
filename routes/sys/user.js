@@ -46,7 +46,7 @@ router.post("/register", auth, (req, res) => {
   userModule
     .registerUser(req.body)
     .then((response) => {
-      res.status(200).send(response);
+      res.status(200).send("İstifadəçi əlavə edildi!");
     })
     .catch((error) => {
       logger.error(`GET /auth/users/ error : ${error.message}`);
