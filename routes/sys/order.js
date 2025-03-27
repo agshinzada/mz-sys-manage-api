@@ -64,7 +64,7 @@ router.get("/logo/search", auth, (req, res) => {
     });
 });
 
-router.post("/status", auth, (req, res) => {
+router.put("/status", auth, (req, res) => {
   orderModule
     .updateOrderStatus(req.body)
     .then((response) => {

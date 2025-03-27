@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 
 const app = express();
-const port = 5188;
+const port = 5189;
 
 const orderRoute = require("./routes/sys/order");
 const paymentRoute = require("./routes/sys/payment");
@@ -20,6 +20,7 @@ const clientLogRoute = require("./routes/client/log");
 const mobimDeviceRoute = require("./routes/mobim/device");
 const mobimConnRoute = require("./routes/mobim/connection");
 const mobimServiceRoute = require("./routes/mobim/service");
+const mobimRoute = require("./routes/mobim/mobim");
 const reportService = require("./routes/report");
 const sysService = require("./routes/sys");
 const archiveUserRoute = require("./routes/archive/user");
@@ -54,6 +55,7 @@ app.use("/api/clients/logs", clientLogRoute);
 app.use("/api/mobim/devices", mobimDeviceRoute);
 app.use("/api/mobim/connections", mobimConnRoute);
 app.use("/api/mobim/services", mobimServiceRoute);
+app.use("/api/mobim", mobimRoute);
 
 app.use("/api/reports", reportService);
 

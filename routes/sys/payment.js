@@ -55,6 +55,9 @@ router.post("/search", auth, (req, res) => {
     case 4:
       funcName = "getPaymentsByClientCode";
       break;
+    case 5:
+      funcName = "getPaymentsByStatus";
+      break;
 
     default:
       break;
@@ -65,6 +68,23 @@ router.post("/search", auth, (req, res) => {
     })
     .catch((error) => {
       logger.error(`GET /payments/search error : ${error.message}`);
+      res.status(500).send(error.message);
+    });
+});
+
+router.put("/status", auth, (req, res) => {
+  paymentModule
+    .updatePaymentStatus(req.body)
+    .then((response) => {
+      const dat = (response && response[0]) || [];
+      if (dat?.ErrorNumber) {
+        res.status(200).send({ error: true, response: dat });
+      } else {
+        res.status(200).send({ error: false, response });
+      }
+    })
+    .catch((error) => {
+      logger.error(`POST /payments/status error : ${error.message}`);
       res.status(500).send(error.message);
     });
 });

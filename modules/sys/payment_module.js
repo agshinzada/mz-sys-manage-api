@@ -1,4 +1,4 @@
-const { poolMobim, poolMazarina } = require("../../database");
+const { poolMobim, poolMazarina, poolSYS } = require("../../database");
 const sql = require("mssql");
 
 const getPayments = async () => {
@@ -142,41 +142,78 @@ const getPaymentsByRecordId = async (data) => {
   }
 };
 
+const getPaymentsByStatus = async (data) => {
+  try {
+    await poolMobim.connect();
+    const result = await poolMobim
+      .request()
+      .input("value", sql.VarChar, data)
+      .query(
+        `
+        Select TOP 200 PL.amount,PL.brend_id,PL.clientcode,CLC.SPECODE,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
+        PL.rec_i,PL.sign,PL.status,PL.trcode,SC.COLOR STATUS_COLOR,SC.NAME STATUS_NAME,SB.NAME BRAND_NAME
+        from ${process.env.PAYMENT_LINES_TABLE} PL
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERSTATUS_TABLE} SC ON SC.STATUS_ID=PL.status
+        LEFT JOIN ${process.env.DB_SYS}..${process.env.BRAND_TABLE} SB ON SB.SYS_ID=PL.brend_id
+        LEFT JOIN ${process.env.DB_MAZARINA}..${process.env.CLCARD_TABLE} CLC ON CLC.CODE = PL.clientcode collate Cyrillic_General_CI_AI
+        where PL.status=@value
+        order by PL.InsertedDate desc`
+      );
+    return result.recordset;
+  } catch (err) {
+    throw err;
+  } finally {
+    poolMobim.release();
+  }
+};
+
 const getPaymentRemain = async (data) => {
   try {
-    await poolMazarina.connect();
-    const result = await poolMazarina
+    console.log(data);
+    await poolSYS.connect();
+    const result = await poolSYS
       .request()
       .input("to", sql.VarChar, data.date)
       .input("region", sql.VarChar, data.region)
       .query(
         `
-        with cte 
-as
-(
-SELECT sls.CODE,SLS.DEFINITION_,CPD.NAME bolge,DATE_,
-(ISNULL((SELECT AMOUNT FROM LG_013_01_KSLINES WHERE LOGICALREF = KSL.LOGICALREF AND SIGN = 0 and TRCODE = '11' and ksl.LINEEXP not like '711.%'),0) ) AS PRIXOD,
-(ISNULL((SELECT AMOUNT FROM LG_013_01_KSLINES  WHERE LOGICALREF = KSL.LOGICALREF AND SIGN = 1 and TRCODE = '74' and ksl.DOCODE not like '711.%' ),0) ) AS RASXOD --- Aciqlama 711 xaric ele
-FROM MAZARINA2024..LG_013_KSCARD ks 
-left join maindb..LG_SLSMAN sls on sls.CODE = ks.CODE and sls.FIRMNR = 13 AND SLS.ACTIVE = 0
-left JOIN LG_013_01_KSLINES KSL ON KSL.CARDREF = KS.LOGICALREF 
-left JOIN MAINDB..L_CAPIDIV CPD ON CPD.NR = SLS.SPECODE AND CPD.FIRMNR = 13
-WHERE KS.ACTIVE = 0 and ksl.DATE_ BETWEEN '2024-01-01' AND @to AND CPD.NAME = @region
-GROUP BY sls.CODE,SLS.DEFINITION_,CPD.NAME,ksl.DATE_,ksl.SIGN,ksl.TRCODE,KS.LOGICALREF,KSL.LOGICALREF,ksl.LINEEXP,ksl.SPECODE,ksl.DOCODE
-)
- 
-select code AS RUT,DEFINITION_ AS ACIQLAMA,bolge AS BOLGE,
-ROUND((SUM(PRIXOD) - SUM(RASXOD)),3) AS QALIQ from cte
-GROUP BY code,DEFINITION_,bolge
-having ROUND((SUM(PRIXOD) - SUM(RASXOD)),3) <> 0
-and CODE not in ('0','15','16','17','18','19','20','31','909')
+       SELECT*FROM KASSA_QALIQ
         `
       );
     return result.recordset;
   } catch (err) {
     throw err;
   } finally {
-    poolMazarina.release();
+    poolSYS.release();
+  }
+};
+
+const updatePaymentStatus = async (data) => {
+  try {
+    await poolMobim.connect();
+    const result = await poolMobim
+      .request()
+      .input("code", sql.Int, data.status)
+      .input("id", sql.Int, data.recordId).query(`
+        BEGIN TRY
+        update ${process.env.PAYMENT_LINES_TABLE} set status = @code where rec_i = @id
+        END TRY
+            BEGIN CATCH
+            SELECT
+            ERROR_NUMBER() AS ErrorNumber,
+            ERROR_STATE() AS ErrorState,
+            ERROR_SEVERITY() AS ErrorSeverity,
+            ERROR_PROCEDURE() AS ErrorProcedure,
+            ERROR_LINE() AS ErrorLine,
+            ERROR_MESSAGE() AS ErrorMessage;
+            END CATCH
+        `);
+
+    return result.recordset;
+  } catch (err) {
+    throw err;
+  } finally {
+    poolMobim.release();
   }
 };
 
@@ -188,4 +225,6 @@ module.exports = {
   getPaymentsByRecordId,
   getPaymentRemain,
   getDelayedPayments,
+  getPaymentsByStatus,
+  updatePaymentStatus,
 };
