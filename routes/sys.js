@@ -199,4 +199,28 @@ router.put("/brands/:id", auth, (req, res) => {
     });
 });
 
+router.get("/clients/search/:code", (req, res) => {
+  sysModule
+    .getClientsBySearch(req.params.code)
+    .then((response) => {
+      res.status(200).send(response);
+    })
+    .catch((error) => {
+      logger.error(`GET clients/search/:code error : ${error.message}`);
+      res.status(500).send(error.message);
+    });
+});
+
+router.get("/clients/:id", (req, res) => {
+  sysModule
+    .getClientById(req.params.id)
+    .then((response) => {
+      res.status(200).send(...response);
+    })
+    .catch((error) => {
+      logger.error(`GET clients/:id error : ${error.message}`);
+      res.status(500).send(error.message);
+    });
+});
+
 module.exports = router;

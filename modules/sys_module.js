@@ -1,4 +1,4 @@
-const { poolSYS } = require("../database");
+const { poolSYS, poolMazarina } = require("../database");
 const sql = require("mssql");
 
 const getStatusCodes = async () => {
@@ -233,6 +233,42 @@ const getOrderkindCodesBySearch = async (value) => {
   }
 };
 
+const getClientsBySearch = async (code) => {
+  try {
+    await poolMazarina.connect();
+    const result = await poolMazarina
+      .request()
+      .input("code", sql.Char, `%${code}%`)
+      .query(
+        `SELECT TOP 50 *FROM ${process.env.CLCARD_TABLE} WHERE (CODE LIKE @code OR DEFINITION_ LIKE @code) AND (CARDTYPE=3 OR CARDTYPE=4)
+     `
+      );
+    return result.recordset;
+  } catch (err) {
+    throw err;
+  } finally {
+    poolMazarina.release();
+  }
+};
+
+const getClientById = async (id) => {
+  try {
+    await poolMazarina.connect();
+    const result = await poolMazarina
+      .request()
+      .input("id", sql.VarChar, id)
+      .query(
+        `SELECT *FROM ${process.env.CLCARD_TABLE} WHERE LOGICALREF=@id AND (CARDTYPE=3 OR CARDTYPE=4)
+     `
+      );
+    return result.recordset;
+  } catch (err) {
+    throw err;
+  } finally {
+    poolMazarina.release();
+  }
+};
+
 const postStatus = async (data) => {
   try {
     await poolSYS.connect();
@@ -332,4 +368,6 @@ module.exports = {
   getOrderkindCodesBySearch,
   postOrderkind,
   putOrderkind,
+  getClientsBySearch,
+  getClientById,
 };
