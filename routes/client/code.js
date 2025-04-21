@@ -11,7 +11,21 @@ router.post("/createcode", auth, (req, res) => {
       res.status(200).send(response);
     })
     .catch((error) => {
-      logger.error(`POST /clients/createcode error : ${error.message}`);
+      logger.error(`POST /clients/codes/createcode error : ${error.message}`);
+      res.status(500).send(error.message);
+    });
+});
+
+router.post("/createsticker", auth, (req, res) => {
+  codeModule
+    .createStickerCodes(req.body)
+    .then((response) => {
+      res.status(200).send(response);
+    })
+    .catch((error) => {
+      logger.error(
+        `POST /clients/codes/createsticker error : ${error.message}`
+      );
       res.status(500).send(error.message);
     });
 });
@@ -36,6 +50,18 @@ router.post("/bulk", auth, (req, res) => {
     })
     .catch((error) => {
       logger.error(`POST /clients/bulk error : ${error.message}`);
+      res.status(500).send(error.message);
+    });
+});
+
+router.post("/bulk/sticker", auth, (req, res) => {
+  codeModule
+    .insertBulkStickers(req.body)
+    .then((response) => {
+      res.status(200).send("Stikerlər uğurla əlavə edildi!");
+    })
+    .catch((error) => {
+      logger.error(`POST /clients/bulk/sticker error : ${error.message}`);
       res.status(500).send(error.message);
     });
 });

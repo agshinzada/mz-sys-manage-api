@@ -6,7 +6,7 @@ const getOrders = async () => {
     await poolMobim.connect();
     const result = await poolMobim.request().query(
       `
-      SELECT OH.brend_id,OH.clientcode,OH.clorderno,clc.SPECODE,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
+      SELECT OH.brend_id,OH.clientcode,OH.clorderno,clc.SPECODE,clc.DEFINITION_,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
         OH.promostatus,OH.record_id,OH.RouteType,OH.specode,OH.status,SC.COLOR ORDERKIND_COLOR,SC.NAME ORDERKIND_NAME, 
         SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM ${process.env.ORDER_HEAD_TABLE} OH
         LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERKIND_TABLE} SC ON SC.STATUS_ID=OH.orderkind
@@ -30,7 +30,7 @@ const getDelayedOrders = async () => {
   try {
     await poolMobim.connect();
     const result = await poolMobim.request().query(
-      `SELECT OH.brend_id,OH.clientcode,OH.clorderno,clc.SPECODE,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
+      `SELECT OH.brend_id,OH.clientcode,OH.clorderno,clc.SPECODE,clc.DEFINITION_,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
         OH.promostatus,OH.record_id,OH.RouteType,OH.specode,OH.status,SC.COLOR ORDERKIND_COLOR,SC.NAME ORDERKIND_NAME, 
         SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM ${process.env.ORDER_HEAD_TABLE} OH
         LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERKIND_TABLE} SC ON SC.STATUS_ID=OH.orderkind
@@ -130,7 +130,7 @@ const getOrdersByClientCode = async (data) => {
       .input("client", sql.VarChar, data)
       .query(
         `
-        SELECT TOP 200 OH.brend_id,OH.clientcode,OH.clorderno,clc.SPECODE,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
+        SELECT TOP 200 OH.brend_id,OH.clientcode,OH.clorderno,clc.SPECODE,CLC.DEFINITION_,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
         OH.promostatus,OH.record_id,OH.RouteType,OH.specode,OH.status,SC.COLOR ORDERKIND_COLOR,SC.NAME ORDERKIND_NAME, 
         SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM ${process.env.ORDER_HEAD_TABLE} OH
         LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERKIND_TABLE} SC ON SC.STATUS_ID=OH.orderkind
@@ -157,7 +157,7 @@ const getOrdersByOrderId = async (data) => {
       .request()
       .input("id", sql.VarChar, data)
       .query(
-        `SELECT TOP 200 OH.brend_id,OH.clientcode,OH.clorderno,clc.SPECODE,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
+        `SELECT TOP 200 OH.brend_id,OH.clientcode,OH.clorderno,clc.SPECODE,CLC.DEFINITION_,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
         OH.promostatus,OH.record_id,OH.RouteType,OH.specode,OH.status,SC.COLOR ORDERKIND_COLOR,SC.NAME ORDERKIND_NAME, 
         SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM ${process.env.ORDER_HEAD_TABLE} OH
         LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERKIND_TABLE} SC ON SC.STATUS_ID=OH.orderkind
@@ -181,7 +181,7 @@ const getOrdersByDeviceId = async (data) => {
       .request()
       .input("id", sql.VarChar, data)
       .query(
-        `SELECT TOP 200 OH.brend_id,OH.clientcode,OH.clorderno,clc.SPECODE,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
+        `SELECT TOP 200 OH.brend_id,OH.clientcode,OH.clorderno,clc.SPECODE,CLC.DEFINITION_,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
         OH.promostatus,OH.record_id,OH.RouteType,OH.specode,OH.status,SC.COLOR ORDERKIND_COLOR,SC.NAME ORDERKIND_NAME, 
         SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM ${process.env.ORDER_HEAD_TABLE} OH
         LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERKIND_TABLE} SC ON SC.STATUS_ID=OH.orderkind
@@ -207,7 +207,7 @@ const getOrdersByRecordId = async (data) => {
       .input("id", sql.VarChar, data)
       .query(
         `
-        SELECT TOP 200 OH.brend_id,OH.clientcode,OH.clorderno,clc.SPECODE,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
+        SELECT TOP 200 OH.brend_id,OH.clientcode,OH.clorderno,clc.SPECODE,CLC.DEFINITION_,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
         OH.promostatus,OH.record_id,OH.RouteType,OH.specode,OH.status,SC.COLOR ORDERKIND_COLOR,SC.NAME ORDERKIND_NAME, 
         SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM ${process.env.ORDER_HEAD_TABLE} OH
         LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERKIND_TABLE} SC ON SC.STATUS_ID=OH.orderkind
@@ -233,7 +233,7 @@ const getOrdersByStatus = async (data) => {
       .input("id", sql.VarChar, data)
       .query(
         `
-       SELECT TOP 200 OH.brend_id,OH.clientcode,OH.clorderno,clc.SPECODE,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
+       SELECT TOP 200 OH.brend_id,OH.clientcode,OH.clorderno,clc.SPECODE,CLC.DEFINITION_,OH.device_id,OH.InsertedDate,OH.order_id,OH.orderkind,
         OH.promostatus,OH.record_id,OH.RouteType,OH.specode,OH.status,SC.COLOR ORDERKIND_COLOR,SC.NAME ORDERKIND_NAME, 
         SC2.COLOR STATUS_COLOR, SC2.NAME STATUS_NAME,SB.NAME BRAND_NAME FROM ${process.env.ORDER_HEAD_TABLE} OH
         LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERKIND_TABLE} SC ON SC.STATUS_ID=OH.orderkind

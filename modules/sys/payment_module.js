@@ -6,7 +6,7 @@ const getPayments = async () => {
     await poolMobim.connect();
     const result = await poolMobim.request().query(
       `
-      Select PL.amount,PL.brend_id,PL.clientcode,CLC.SPECODE,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
+      Select PL.amount,PL.brend_id,PL.clientcode,CLC.SPECODE,CLC.DEFINITION_,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
         PL.rec_i,PL.sign,PL.status,PL.trcode,SC.COLOR STATUS_COLOR,SC.NAME STATUS_NAME,SB.NAME BRAND_NAME
         from ${process.env.PAYMENT_LINES_TABLE} PL
         LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERSTATUS_TABLE} SC ON SC.STATUS_ID=PL.status
@@ -52,7 +52,7 @@ const getPaymentsByClientCode = async (data) => {
       .input("client", sql.VarChar, data)
       .query(
         `
-        Select TOP 200 PL.amount,PL.brend_id,PL.clientcode,CLC.SPECODE,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
+        Select TOP 200 PL.amount,PL.brend_id,PL.clientcode,CLC.SPECODE,CLC.DEFINITION_,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
         PL.rec_i,PL.sign,PL.status,PL.trcode,SC.COLOR STATUS_COLOR,SC.NAME STATUS_NAME,SB.NAME BRAND_NAME
         from ${process.env.PAYMENT_LINES_TABLE} PL
         LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERSTATUS_TABLE} SC ON SC.STATUS_ID=PL.status
@@ -77,7 +77,7 @@ const getPaymentsByOrderId = async (data) => {
       .input("id", sql.VarChar, data)
       .query(
         `
-       Select TOP 200 PL.amount,PL.brend_id,PL.clientcode,CLC.SPECODE,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
+       Select TOP 200 PL.amount,PL.brend_id,PL.clientcode,CLC.SPECODE,CLC.DEFINITION_,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
         PL.rec_i,PL.sign,PL.status,PL.trcode,SC.COLOR STATUS_COLOR,SC.NAME STATUS_NAME,SB.NAME BRAND_NAME
         from ${process.env.PAYMENT_LINES_TABLE} PL
         LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERSTATUS_TABLE} SC ON SC.STATUS_ID=PL.status
@@ -101,7 +101,7 @@ const getPaymentsByDeviceId = async (data) => {
       .input("id", sql.VarChar, data)
       .query(
         `
-         Select TOP 200 PL.amount,PL.brend_id,PL.clientcode,CLC.SPECODE,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
+         Select TOP 200 PL.amount,PL.brend_id,PL.clientcode,CLC.SPECODE,CLC.DEFINITION_,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
         PL.rec_i,PL.sign,PL.status,PL.trcode,SC.COLOR STATUS_COLOR,SC.NAME STATUS_NAME,SB.NAME BRAND_NAME
         from ${process.env.PAYMENT_LINES_TABLE} PL
         LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERSTATUS_TABLE} SC ON SC.STATUS_ID=PL.status
@@ -125,7 +125,7 @@ const getPaymentsByRecordId = async (data) => {
       .input("id", sql.VarChar, data)
       .query(
         `
-        Select TOP 200 PL.amount,PL.brend_id,PL.clientcode,CLC.SPECODE,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
+        Select TOP 200 PL.amount,PL.brend_id,PL.clientcode,CLC.SPECODE,CLC.DEFINITION_,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
         PL.rec_i,PL.sign,PL.status,PL.trcode,SC.COLOR STATUS_COLOR,SC.NAME STATUS_NAME,SB.NAME BRAND_NAME
         from ${process.env.PAYMENT_LINES_TABLE} PL
         LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERSTATUS_TABLE} SC ON SC.STATUS_ID=PL.status
@@ -150,7 +150,7 @@ const getPaymentsByStatus = async (data) => {
       .input("value", sql.VarChar, data)
       .query(
         `
-        Select TOP 200 PL.amount,PL.brend_id,PL.clientcode,CLC.SPECODE,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
+        Select TOP 200 PL.amount,PL.brend_id,PL.clientcode,CLC.SPECODE,CLC.DEFINITION_,PL.device_id,PL.ficheref,PL.InsertedDate,PL.payment_id,
         PL.rec_i,PL.sign,PL.status,PL.trcode,SC.COLOR STATUS_COLOR,SC.NAME STATUS_NAME,SB.NAME BRAND_NAME
         from ${process.env.PAYMENT_LINES_TABLE} PL
         LEFT JOIN ${process.env.DB_SYS}..${process.env.ORDERSTATUS_TABLE} SC ON SC.STATUS_ID=PL.status
@@ -169,7 +169,6 @@ const getPaymentsByStatus = async (data) => {
 
 const getPaymentRemain = async (data) => {
   try {
-    console.log(data);
     await poolSYS.connect();
     const result = await poolSYS
       .request()
@@ -177,7 +176,7 @@ const getPaymentRemain = async (data) => {
       .input("region", sql.VarChar, data.region)
       .query(
         `
-       SELECT*FROM KASSA_QALIQ
+       SELECT*FROM KASSA_QALIQ WHERE BOLGE=@region
         `
       );
     return result.recordset;
